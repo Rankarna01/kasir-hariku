@@ -102,7 +102,8 @@ if ($action === 'open_shift') {
 }
 
 if ($action === 'close_shift') {
-    $end_cash = $_POST['end_cash'] ?? 0;
+    $raw_end_cash = preg_replace('/[^0-9]/', '', (string)($_POST['end_cash'] ?? '0'));
+    $end_cash = (int)$raw_end_cash;
     // Get current open shift id
     $stmtGet = $pdo->prepare("SELECT id FROM shifts_history_pos WHERE user_id = ? AND status = 'open' LIMIT 1");
     $stmtGet->execute([$user_id]);

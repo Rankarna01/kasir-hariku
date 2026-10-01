@@ -90,8 +90,7 @@ document.addEventListener('alpine:init', () => {
         needsShiftOpen: false, isLoadingShift: false, masterShifts: [],
         activeShiftName: '',
         startCashFormatted: '0',
-        shiftForm: { shift_id: '', start_cash: 0 },
-        showCloseShiftModal: false, closeShiftCash: '',
+        showCloseShiftModal: false, closeShiftCash: '', closeShiftCashFormatted: '',
 
         // --- KAS KELUAR ---
         showKasKeluarModal: false, isSavingKas: false,
@@ -294,12 +293,30 @@ document.addEventListener('alpine:init', () => {
             finally { this.isLoadingShift = false; }
         },
 
-      openCloseShiftModal() { this.closeShiftCash = ''; this.showCloseShiftModal = true; },
+        openCloseShiftModal() { 
+            this.closeShiftCash = ''; 
+            this.closeShiftCashFormatted = ''; 
+            this.showCloseShiftModal = true; 
+        },
+
+        updateCloseShiftCashInput(val) {
+            const raw = String(val).replace(/[^0-9]/g, '');
+            if (raw === '') {
+                this.closeShiftCash = '';
+                this.closeShiftCashFormatted = '';
+                return;
+            }
+            const num = parseInt(raw, 10) || 0;
+            this.closeShiftCash = num;
+            this.closeShiftCashFormatted = this.formatRupiah(num);
+        },
 
         async closeShift() {
             this.isLoadingShift = true;
             try {
-                const fd = new FormData(); fd.append('end_cash', this.closeShiftCash);
+                const endCashVal = typeof this.closeShiftCash === 'number' ? this.closeShiftCash : (parseInt(String(this.closeShiftCash).replace(/[^0-9]/g, ''), 10) || 0);
+                const fd = new FormData(); 
+                fd.append('end_cash', endCashVal);
                 // ARAHKAN KE logic_kasir.php
                 const res = await fetch('logic_kasir.php?action=close_shift', { method: 'POST', body: fd });
                 const rawText = await res.text(); // X-RAY ERROR HANDLER
