@@ -56,7 +56,7 @@ try {
         </header>
 
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
-            <div class="max-w-4xl mx-auto space-y-6">
+            <div class="w-full space-y-6">
                 
                 <div class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-xl">
                     <div class="flex gap-3">

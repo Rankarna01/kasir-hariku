@@ -81,7 +81,7 @@ function isDropdownActive($paths, $current_uri) {
     }
 </style>
 
-<aside id="main-sidebar" class="w-[260px] bg-white border-r border-[#FFE4EC] flex-col shadow-sm fixed inset-y-0 left-0 z-[70] transform -translate-x-full md:relative md:translate-x-0 flex h-screen max-h-screen">
+<aside id="main-sidebar" class="w-[260px] bg-white border-r border-[#FFE4EC] flex-col shadow-sm fixed inset-y-0 left-0 z-30 transform -translate-x-full md:relative md:translate-x-0 flex h-screen max-h-screen">
 
     <!-- HEADER SIDEBAR (LOGO HARIKU) -->
     <div class="h-16 flex items-center justify-between px-3.5 border-b border-[#FFE4EC] shrink-0 bg-white sidebar-header-box">
