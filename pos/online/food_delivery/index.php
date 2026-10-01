@@ -30,7 +30,7 @@ $page_title = "Food Delivery - Love Cakes POS";
 
         <!-- KONTEN UTAMA -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-4 md:p-8 bg-slate-100/50">
-            <div class="w-full max-w-4xl mx-auto space-y-6">
+            <div class="w-full space-y-6">
 
                 <div class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm">
                     <div class="mb-6">

@@ -1,11 +1,11 @@
 <?php
 session_start();
-require_once '../../config/database.php';
+require_once __DIR__ . '/../../config/database.php';
 
 $shift_id = $_GET['id'] ?? 0;
 
 $stmt = $pdo->prepare("
-    SELECT sh.*, COALESCE(u.name, 'Kasir') as cashier_name 
+    SELECT sh.*, COALESCE(u.name, u.username, 'Kasir') AS cashier_name 
     FROM shifts_history_pos sh 
     LEFT JOIN users_pos u ON sh.user_id = u.id 
     WHERE sh.id = ?
@@ -17,20 +17,14 @@ if (!$shift) {
     die("Shift tidak ditemukan.");
 }
 
-if (empty($shift['cashier_name']) || $shift['cashier_name'] === 'Kasir') {
-    if (!empty($_SESSION['user_name'])) {
-        $shift['cashier_name'] = $_SESSION['user_name'];
-    }
-}
-
-// Tarik Data Toko Dinamis dari store_settings_pos
-$toko = false;
+$store_name = 'AYAM GORENG HARIKU';
 try {
-    $stmt_toko = $pdo->query("SELECT * FROM store_settings_pos WHERE id = 1");
-    $toko = $stmt_toko ? $stmt_toko->fetch(PDO::FETCH_ASSOC) : false;
-} catch (Exception $e) { }
-
-$store_name = (!empty($toko) && !empty($toko['store_name'])) ? $toko['store_name'] : 'AYAM GORENG HARIKU';
+    $stmt_store = $pdo->query("SELECT * FROM store_settings_pos WHERE id = 1");
+    $store = $stmt_store ? $stmt_store->fetch(PDO::FETCH_ASSOC) : null;
+    if ($store && !empty($store['store_name'])) {
+        $store_name = $store['store_name'];
+    }
+} catch (Exception $e) {}
 
 // Query Total Tamu (jumlah transaksi)
 $stmt_guests = $pdo->prepare("SELECT COUNT(*) as total FROM sales_pos WHERE created_at BETWEEN ? AND IFNULL(?, NOW())");
@@ -111,10 +105,31 @@ foreach ($void_methods as $vm) {
     }
 }
 
+// Hitung Kas Keluar & Kas Masuk dari petty_cash_pos untuk shift ini
+$kas_keluar = 0;
+$kas_masuk = 0;
+try {
+    $stmtKas = $pdo->prepare("
+        SELECT jenis, SUM(nominal) as total 
+        FROM petty_cash_pos 
+        WHERE (shift_history_id = ? OR (user_id = ? AND created_at BETWEEN ? AND IFNULL(?, NOW()))) 
+        GROUP BY jenis
+    ");
+    $stmtKas->execute([$shift['id'], $shift['user_id'], $shift['start_time'], $shift['end_time']]);
+    while ($row = $stmtKas->fetch(PDO::FETCH_ASSOC)) {
+        if ($row['jenis'] === 'keluar') {
+            $kas_keluar = floatval($row['total']);
+        } elseif ($row['jenis'] === 'masuk') {
+            $kas_masuk = floatval($row['total']);
+        }
+    }
+} catch (Exception $e) {
+    $kas_keluar = floatval($shift['total_kas_keluar'] ?? 0);
+    $kas_masuk = floatval($shift['total_cash_in'] ?? 0);
+}
+
 // Hitung Kas Aktual / Expected
-$awal_laci = $shift['start_cash'];
-$kas_keluar = $shift['total_kas_keluar'];
-$kas_masuk = $shift['total_cash_in'] ?? 0; 
+$awal_laci = floatval($shift['start_cash'] ?? 0);
 $expected_cash = $awal_laci + $total_penjualan_tunai + $total_pembayaran_kredit_tunai + $kas_masuk - $kas_keluar - $total_void_cash;
 
 
@@ -270,7 +285,7 @@ function fRp($val) {
     </div>
     
     <div style="margin: 10px 0;">
-        <div class="flex"><span>Kasir</span><span><?= $shift['cashier_name'] ?></span></div>
+        <div class="flex"><span>Kasir</span><span><?= htmlspecialchars($shift['cashier_name'] ?? 'Kasir') ?></span></div>
         <div class="flex"><span>Mulai Shift</span><span><?= date('d M Y H:i', strtotime($shift['start_time'])) ?></span></div>
         <div class="flex"><span>Akhiri Shift</span><span><?= $shift['end_time'] ? date('d M Y H:i', strtotime($shift['end_time'])) : '-' ?></span></div>
         <div class="flex"><span>Jumlah Tamu</span><span><?= $total_tamu ?> pax(s)</span></div>
@@ -328,7 +343,7 @@ function fRp($val) {
     <script>
         const shiftData = {
             storeName: <?= json_encode($store_name) ?>,
-            cashier: <?= json_encode($shift['cashier_name']) ?>,
+            cashier: <?= json_encode($shift['cashier_name'] ?? 'Kasir') ?>,
             printed: <?= json_encode(date('d M Y H:i')) ?>,
             start: <?= json_encode(date('d M Y H:i', strtotime($shift['start_time']))) ?>,
             end: <?= json_encode($shift['end_time'] ? date('d M Y H:i', strtotime($shift['end_time'])) : '-') ?>,

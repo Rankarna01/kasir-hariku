@@ -164,8 +164,88 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
     /* INI KUNCI ANTI KEDAP-KEDIP */
     [x-cloak] { display: none !important; }
     
-    #global-loader { display: none; backdrop-filter: blur(4px); }
-    div:where(.swal2-container) { font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', sans-serif !important; }
+    /* SweetAlert standard font & always on top of all modals/drawers */
+    div:where(.swal2-container),
+    .swal2-container { 
+        font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', sans-serif !important; 
+        z-index: 100000 !important; 
+    }
+
+    /* ===== LAYER MODAL CRUD & FORM (SELALU DI ATAS SIDEBAR & HEADER) ===== */
+    .fixed.inset-0.z-50,
+    .fixed.inset-0.z-\[50\],
+    .fixed.inset-0.z-\[60\],
+    .fixed.inset-0.z-\[70\],
+    div[id^="modal-"]:not(.hidden),
+    div[id$="-modal"]:not(.hidden),
+    div[x-show*="Modal"]:not([style*="display: none"]):not([style*="display:none"]),
+    div[x-show*="modal"]:not([style*="display: none"]):not([style*="display:none"]) {
+        z-index: 9000 !important;
+    }
+
+    /* Sembunyikan / Redupkan Sidebar saat Modal Aktif */
+    body.has-modal-open #main-sidebar,
+    body:has(div[id^="modal-"]:not(.hidden)) #main-sidebar,
+    body:has(div[id$="-modal"]:not(.hidden)) #main-sidebar,
+    body:has(div[x-show*="Modal"]:not([style*="display: none"]):not([style*="display:none"])) #main-sidebar,
+    body:has(div[x-show*="modal"]:not([style*="display: none"]):not([style*="display:none"])) #main-sidebar {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    /* ===== GLOBAL STYLING SEMUA TABEL: HEADER PINK CERAH HARIKU & TEKS PUTIH ===== */
+    table thead,
+    table thead tr,
+    table thead th {
+        background-color: #FF3870 !important; /* Warna cerah seperti button Hariku Pink (#FF3870) */
+        color: #FFFFFF !important; /* Teks putih */
+        border-color: #E62058 !important;
+        border-bottom: 2px solid #E62058 !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.025em !important;
+    }
+
+    table thead th,
+    table thead th span,
+    table thead th div,
+    table thead th p,
+    table thead th a,
+    table thead th button,
+    table thead td {
+        color: #FFFFFF !important;
+    }
+
+    table thead th i,
+    table thead td i {
+        color: #FFFFFF !important;
+    }
+
+    table thead tr:hover,
+    table thead th:hover {
+        background-color: #FF3870 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Tabel di-hover tidak berubah warna */
+    table tbody tr:hover,
+    table tbody tr:hover td,
+    table tbody tr:hover th,
+    table tr[class*="hover:"]:hover {
+        background-color: transparent !important;
+        transition: none !important;
+    }
+
+    table tbody tr.bg-white:hover,
+    table tbody tr[class*="bg-white"]:hover {
+        background-color: #FFFFFF !important;
+    }
+
+    /* Container utama nempel rapi ke sidebar (full width tanpa gap berlebih) */
+    main > div.w-full {
+        max-width: 100% !important;
+    }
 
     /* ===== DESKTOP HAMBURGER BUTTON IN TOPBAR ===== */
     header.bg-primary button[onclick*="toggleSidebar"] {
@@ -427,4 +507,26 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
         }
     };
     window.doLogout = window.logoutSistem;
+
+    // ===== AUTO DETECT MODAL STATUS & TOGGLE has-modal-open =====
+    document.addEventListener('DOMContentLoaded', function() {
+        function checkActiveModals() {
+            var activeModal = document.querySelector('div[id^="modal-"]:not(.hidden), div[id$="-modal"]:not(.hidden)');
+            if (!activeModal) {
+                var alp = document.querySelectorAll('div[x-show*="Modal"], div[x-show*="modal"]');
+                for (var i = 0; i < alp.length; i++) {
+                    if (alp[i].offsetParent !== null && window.getComputedStyle(alp[i]).display !== 'none' && !alp[i].classList.contains('hidden')) {
+                        activeModal = alp[i];
+                        break;
+                    }
+                }
+            }
+            if (activeModal) {
+                document.body.classList.add('has-modal-open');
+            } else {
+                document.body.classList.remove('has-modal-open');
+            }
+        }
+        setInterval(checkActiveModals, 150);
+    });
 </script>

@@ -72,6 +72,12 @@ function isDropdownActive($paths, $current_uri) {
         opacity: 1;
     }
 
+    /* Pastikan popup SweetAlert2 selalu berada di lapisan paling depan (di atas sidebar & overlay) */
+    div:where(.swal2-container),
+    .swal2-container {
+        z-index: 100000 !important;
+    }
+
     /* Tombol Toggle Floating Hariku Pink */
     #sidebar-toggle-btn {
         position: fixed;
@@ -327,6 +333,16 @@ function isDropdownActive($paths, $current_uri) {
 
     // ===== FUNGSI LOGOUT KASIR =====
     function doLogoutKasir() {
+        // Tutup drawer sidebar kasir terlebih dahulu agar tidak menumpuk
+        var sidebar = document.getElementById('main-sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        var btn = document.getElementById('sidebar-toggle-btn');
+        if (sidebar && sidebar.classList.contains('sidebar-open')) {
+            sidebar.classList.remove('sidebar-open');
+            if (overlay) overlay.classList.remove('overlay-visible');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+        }
+
         var jalankanLogout = function() {
             try {
                 var dbAuth = localforage.createInstance({ name: 'pos_db', storeName: 'auth_store' });

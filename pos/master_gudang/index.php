@@ -47,7 +47,7 @@ $page_title = "Store & Gudang - Love Cakes POS";
 
         <!-- MAIN CONTENT -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-4 md:p-6 bg-[#f8fafc] relative">
-            <div class="w-full max-w-7xl mx-auto space-y-6">
+            <div class="w-full space-y-6">
                 
                 <!-- SUB-HEADER / ACTIONS -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

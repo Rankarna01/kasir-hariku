@@ -106,7 +106,7 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
             </div>
         </header>
 
-        <div x-show="needsShiftOpen" class="absolute inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div x-show="needsShiftOpen" class="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4" x-cloak>
             <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-2xl max-w-lg w-full border border-slate-200 text-left relative overflow-hidden"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 scale-95"
@@ -131,13 +131,13 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                             <template x-for="s in masterShifts" :key="s.id">
                                 <div @click="shiftForm.shift_id = s.id"
                                     :class="shiftForm.shift_id == s.id ? 'border-primary bg-primary-50/80 ring-2 ring-primary/20 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'"
-                                    class="cursor-pointer p-3 rounded-xl border-2 transition-all relative flex flex-col justify-between">
-                                    <div class="flex items-start justify-between">
+                                    class="cursor-pointer p-3 rounded-xl border-2 transition-all relative flex flex-col justify-between select-none">
+                                    <div class="flex items-start justify-between pointer-events-none">
                                         <div>
                                             <span class="font-black text-xs text-slate-800 block" x-text="s.shift_name"></span>
                                             <span class="text-[11px] font-semibold text-slate-500 flex items-center gap-1 mt-0.5">
                                                 <i class="fa-regular fa-clock text-primary text-[10px]"></i>
-                                                <span x-text="(s.start_time || '').substring(0,5) + ' - ' + (s.end_time || '').substring(0,5)"></span>
+                                                <span x-text="(s.start_time || '').substring(0,5) + ' - ' + (s.end_time || '').substring(0,5) + ' WIB'"></span>
                                             </span>
                                         </div>
                                         <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ml-1"
@@ -146,7 +146,7 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                                         </div>
                                     </div>
                                     <template x-if="s.is_current">
-                                        <span class="inline-flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 w-fit mt-1">
+                                        <span class="inline-flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 w-fit mt-1 pointer-events-none">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                             Shift Saat Ini
                                         </span>
@@ -182,8 +182,9 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                         <a href="<?= BASE_URL ?>auth/" class="py-3 px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition-all text-center">
                             Ganti Akun
                         </a>
-                        <button type="submit" :disabled="isLoadingShift || !shiftForm.shift_id" class="flex-1 bg-gradient-to-r from-primary to-rose-600 hover:from-rose-600 hover:to-primary text-white font-black py-3 rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]">
-                            <i class="fa-solid fa-lock-open" :class="isLoadingShift ? 'fa-spin' : ''"></i> BUKA KASIR SEKARANG
+                        <button type="button" @click="openShift()" :disabled="isLoadingShift" class="flex-1 bg-gradient-to-r from-primary to-rose-600 hover:from-rose-600 hover:to-primary text-white font-black py-3 rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer">
+                            <i class="fa-solid fa-lock-open" :class="isLoadingShift ? 'fa-spin' : ''"></i>
+                            <span x-text="isLoadingShift ? 'Membuka Kasir...' : 'BUKA KASIR SEKARANG'"></span>
                         </button>
                     </div>
                 </form>

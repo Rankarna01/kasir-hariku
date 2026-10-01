@@ -51,7 +51,7 @@ $page_title = "Pengeluaran Kas (Petty Cash) - Love Cakes POS";
 
         <!-- MAIN CONTENT AREA -->
         <main class="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-4 md:p-6 bg-slate-100/60">
-            <div class="w-full max-w-7xl mx-auto space-y-5 relative">
+            <div class="w-full space-y-5 relative">
                 
                 <!-- LOADING OVERLAY -->
                 <div x-show="isLoading" x-transition.opacity class="absolute inset-0 z-40 bg-white/70 backdrop-blur-xs flex flex-col items-center justify-center rounded-3xl" style="display: none;">

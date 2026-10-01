@@ -6,7 +6,7 @@ require_once __DIR__ . '/env.php';
 $host = function_exists('env') ? env('DB_HOST', 'localhost') : 'localhost';
 $user = function_exists('env') ? env('DB_USER', 'root') : 'root';
 $pass = function_exists('env') ? env('DB_PASS', '') : '';
-$dbname = function_exists('env') ? env('DB_NAME', 'kasir-hariku') : 'kasir-hariku';
+$dbname = function_exists('env') ? env('DB_NAME', 'db_pos_ku') : 'db_pos_ku';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
@@ -14,7 +14,7 @@ try {
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     // Fallback otomatis jika database di .env tidak ditemukan
-    $altDb = ($dbname === 'sim-kue') ? 'kasir-hariku' : 'sim-kue';
+    $altDb = ($dbname === 'db_pos_ku') ? 'kasir-hariku' : 'db_pos_ku';
     try {
         $pdo = new PDO("mysql:host=$host;dbname=$altDb;charset=utf8", $user, $pass);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
