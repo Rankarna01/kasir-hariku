@@ -1,6 +1,8 @@
 <?php
-session_start();
-require_once '../../../config/database.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once __DIR__ . '/../../../config/database.php';
 
 header('Content-Type: application/json');
 $action = $_REQUEST['action'] ?? '';
@@ -32,7 +34,7 @@ if ($wh_id > 0) {
 if ($action === 'get_shifts') {
     $search = $_GET['search'] ?? '';
     try {
-        $query = "SELECT sh.*, COALESCE(u.name, 'Kasir') as cashier_name FROM shifts_history_pos sh LEFT JOIN users_pos u ON sh.user_id = u.id WHERE 1=1" . $wh_filter_shift;
+        $query = "SELECT sh.*, COALESCE(u.name, 'Kasir') as cashier_name, ms.shift_name FROM shifts_history_pos sh LEFT JOIN users_pos u ON sh.user_id = u.id LEFT JOIN master_shifts_pos ms ON sh.shift_id = ms.id WHERE 1=1" . $wh_filter_shift;
         $params = $wh_params_shift;
 
         if (!empty($search)) { $query .= " AND u.name LIKE ?"; $params[] = "%$search%"; }
@@ -45,7 +47,7 @@ if ($action === 'get_shifts') {
             $params[] = $end_date;
         }
 
-        $countQuery = str_replace("sh.*, COALESCE(u.name, 'Kasir') as cashier_name", "COUNT(*) as total", $query);
+        $countQuery = str_replace("sh.*, COALESCE(u.name, 'Kasir') as cashier_name, ms.shift_name", "COUNT(*) as total", $query);
         $stmtCount = $pdo->prepare($countQuery);
         $stmtCount->execute($params);
         $totalData = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
@@ -59,6 +61,12 @@ if ($action === 'get_shifts') {
         $stmt = $pdo->prepare($query);
         $stmt->execute($params);
         $shifts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sumSystemBalance = 0;
+        $sumActualCash = 0;
+        $sumDifference = 0;
+        $closedCount = 0;
+        $openCount = 0;
 
         foreach ($shifts as &$shift) {
             $startTime = $shift['start_time'];
@@ -79,17 +87,43 @@ if ($action === 'get_shifts') {
             $stmtKas->execute([$shift['id']]);
             $kasKeluar = $stmtKas->fetch(PDO::FETCH_ASSOC)['kas_keluar'] ?? 0;
 
-            $cashBaru = $sales['cash_baru'] ?? 0;
-            $cashPelunasan = ($settled['cash_pelunasan'] ?? 0) + ($sales['dp_baru'] ?? 0);
+            $cashBaru = floatval($sales['cash_baru'] ?? 0);
+            $cashPelunasan = floatval(($settled['cash_pelunasan'] ?? 0) + ($sales['dp_baru'] ?? 0));
             
             $shift['total_cash_sales'] = $cashBaru;
             $shift['total_cash_pelunasan'] = $cashPelunasan;
-            $shift['total_kas_keluar'] = $kasKeluar;
-            $shift['system_balance'] = $shift['start_cash'] + $cashBaru + $cashPelunasan - $kasKeluar;
-            $shift['difference'] = ($shift['status'] === 'closed') ? ($shift['end_cash'] - $shift['system_balance']) : 0;
-        }
+            $shift['total_kas_keluar'] = floatval($kasKeluar);
+            $shift['system_balance'] = floatval($shift['start_cash']) + $cashBaru + $cashPelunasan - floatval($kasKeluar);
+            $shift['difference'] = ($shift['status'] === 'closed') ? (floatval($shift['end_cash']) - $shift['system_balance']) : 0;
 
-        echo json_encode(['status' => 'success', 'data' => $shifts, 'pagination' => ['current_page' => $page, 'total_pages' => $totalPages, 'total_data' => $totalData]]);
+            $sumSystemBalance += $shift['system_balance'];
+            if ($shift['status'] === 'closed') {
+                $sumActualCash += floatval($shift['end_cash']);
+                $sumDifference += $shift['difference'];
+                $closedCount++;
+            } else {
+                $openCount++;
+            }
+        }
+        unset($shift);
+
+        echo json_encode([
+            'status' => 'success', 
+            'data' => $shifts, 
+            'summary' => [
+                'total_shifts' => intval($totalData),
+                'open_shifts' => $openCount,
+                'closed_shifts' => $closedCount,
+                'total_system' => $sumSystemBalance,
+                'total_actual' => $sumActualCash,
+                'total_difference' => $sumDifference
+            ],
+            'pagination' => [
+                'current_page' => $page, 
+                'total_pages' => $totalPages, 
+                'total_data' => $totalData
+            ]
+        ]);
     } catch (PDOException $e) { echo json_encode(['status' => 'error', 'message' => $e->getMessage()]); }
     exit;
 }
@@ -97,7 +131,7 @@ if ($action === 'get_shifts') {
 if ($action === 'get_detail') {
     $id = $_GET['id'] ?? 0;
     try {
-        $stmt = $pdo->prepare("SELECT sh.*, COALESCE(u.name, 'Kasir') as cashier_name FROM shifts_history_pos sh LEFT JOIN users_pos u ON sh.user_id = u.id WHERE sh.id = ?");
+        $stmt = $pdo->prepare("SELECT sh.*, COALESCE(u.name, 'Kasir') as cashier_name, ms.shift_name FROM shifts_history_pos sh LEFT JOIN users_pos u ON sh.user_id = u.id LEFT JOIN master_shifts_pos ms ON sh.shift_id = ms.id WHERE sh.id = ?");
         $stmt->execute([$id]);
         $shift = $stmt->fetch(PDO::FETCH_ASSOC);
 
