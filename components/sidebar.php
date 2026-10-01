@@ -1,7 +1,7 @@
 <?php
 // Pastikan session menyala agar bisa baca role
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    @session_start();
 }
 
 // Ambil role, pangkas spasi kosong, ubah ke huruf kecil

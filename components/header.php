@@ -1,4 +1,7 @@
 <?php
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    session_start();
+}
 require_once __DIR__ . '/../config/env.php';
 
 if (!defined('BASE_URL')) { 
@@ -11,7 +14,11 @@ if (!defined('BASE_URL')) {
 ?>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title><?= $page_title ?? 'Ayam Goreng Hariku - POS Kasir' ?></title>
+<?php
+$raw_title = $page_title ?? 'Ayam Goreng Hariku - POS Kasir';
+$display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
+?>
+<title><?= htmlspecialchars($display_title) ?></title>
 
 <link rel="manifest" href="<?= BASE_URL ?>manifest.json">
 
@@ -19,13 +26,31 @@ if (!defined('BASE_URL')) {
 <link rel="apple-touch-icon" href="<?= BASE_URL ?>assets/img/logo-hariku.png">
 <link rel="icon" type="image/png" href="<?= BASE_URL ?>assets/img/logo-hariku.png">
 
+<!-- Web Fonts: Avenir / Avenir Next with high-quality fallback -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.cdnfonts.com/css/avenir" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/avenir-next-lt-pro" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
     tailwind.config = {
         corePlugins: { preflight: true },
         theme: {
             extend: {
-                fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                fontFamily: { 
+                    sans: ['Avenir', 'Avenir Next', 'Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'] 
+                },
+                fontWeight: {
+                    light: '400',
+                    normal: '500',
+                    medium: '500',
+                    semibold: '600',
+                    bold: '600',
+                    extrabold: '700',
+                    black: '700'
+                },
                 colors: {
                     surface: '#FFFFFF',
                     background: '#FFFFFF',
@@ -55,6 +80,19 @@ if (!defined('BASE_URL')) {
                         800: '#4A2311',
                         900: '#33170B'
                     },
+                    // Map blue to Hariku Pink & Coklat to neutralize remaining blue classes
+                    blue: {
+                        50: '#FFF0F5',
+                        100: '#FFE2EC',
+                        200: '#FFC5D8',
+                        300: '#FF97B6',
+                        400: '#FF6492',
+                        500: '#FF3870',
+                        600: '#FF3870',
+                        700: '#E02360',
+                        800: '#5C2D16',
+                        900: '#4A2311',
+                    },
                     hariku: {
                         pink: '#FF3870',
                         pinkDark: '#E02360',
@@ -75,6 +113,7 @@ if (!defined('BASE_URL')) {
 </script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>assets/fontawesome-free-6.4.2-web/css/all.min.css">
 <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/fontawesome.css">
 
 <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
@@ -86,15 +125,36 @@ if (!defined('BASE_URL')) {
 <script src="<?= BASE_URL ?>assets/js/pos_db.js"></script>
 
 <style>
-    @font-face {
-        font-family: 'Poppins';
-        src: url('<?= BASE_URL ?>assets/fonts/poppins.woff2') format('woff2');
-        font-weight: normal; font-style: normal;
+    /* ===== GLOBAL FONT: AVENIR (STANDARD 500) ===== */
+    html, body, button, input, select, textarea, div, p, span, h1, h2, h3, h4, h5, h6, a, table, td, th, label, li {
+        font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-weight: 500;
+    }
+    strong, b, .font-bold, .font-black, .font-extrabold {
+        font-weight: 600 !important;
+    }
+
+    /* ===== CRITICAL: PROTECT FONT AWESOME ICONS DARI OVERRIDE FONT ===== */
+    .fa, .fa-solid, .fa-regular, .fa-brands, .fas, .far, .fab, 
+    i[class*="fa-"], span[class*="fa-"], [class^="fa-"], [class*=" fa-"] {
+        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+        font-style: normal;
+        font-weight: 900 !important;
+        display: inline-block;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+    }
+    .fa-brands, .fab {
+        font-family: "Font Awesome 6 Brands" !important;
+        font-weight: 400 !important;
+    }
+    .fa-regular, .far {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 400 !important;
     }
     body { 
-        font-family: 'Poppins', sans-serif !important; 
         background-color: #FFFFFF !important; 
-        color: #33170B;
+        color: #4A2311;
     }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -105,11 +165,64 @@ if (!defined('BASE_URL')) {
     [x-cloak] { display: none !important; }
     
     #global-loader { display: none; backdrop-filter: blur(4px); }
-    div:where(.swal2-container) { font-family: 'Poppins', sans-serif !important; }
+    div:where(.swal2-container) { font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', sans-serif !important; }
 
-    /* ===== HARIKU BRAND HEADER / TOPBAR ===== */
-    header.bg-primary {
+    /* ===== DESKTOP HAMBURGER BUTTON IN TOPBAR ===== */
+    header.bg-primary button[onclick*="toggleSidebar"] {
+        display: inline-flex !important;
+    }
+
+    /* ===== COLLAPSIBLE SIDEBAR RULES ===== */
+    #main-sidebar {
+        transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+    }
+    #main-sidebar.sidebar-collapsed {
+        width: 72px !important;
+        min-width: 72px !important;
+        max-width: 72px !important;
+    }
+    #main-sidebar.sidebar-collapsed .sidebar-text,
+    #main-sidebar.sidebar-collapsed .sidebar-chevron,
+    #main-sidebar.sidebar-collapsed .sidebar-section-title,
+    #main-sidebar.sidebar-collapsed .outlet-filter-container,
+    #main-sidebar.sidebar-collapsed .sidebar-user-info {
+        display: none !important;
+    }
+    #main-sidebar.sidebar-collapsed .sidebar-collapsed-outlet {
+        display: flex !important;
+    }
+    #main-sidebar.sidebar-collapsed .sidebar-collapsed-divider {
+        display: block !important;
+    }
+    #main-sidebar.sidebar-collapsed .nav-item {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        width: 44px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+    #main-sidebar.sidebar-collapsed .nav-item i {
+        margin: 0 !important;
+        font-size: 1.15rem !important;
+    }
+    #main-sidebar.sidebar-collapsed .submenu-container {
+        display: none !important;
+    }
+    #main-sidebar.sidebar-collapsed .sidebar-header-box {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        justify-content: center !important;
+        gap: 0 !important;
+    }
+    #main-sidebar.sidebar-collapsed .sidebar-brand-link {
+        display: none !important;
+    }
+
+    /* ===== HARIKU BRAND HEADER / TOPBAR (PERMANENT WHITE BG) ===== */
+    header.bg-primary, header.bg-primary:hover {
         background: #FFFFFF !important;
+        background-color: #FFFFFF !important;
         color: #5C2D16 !important;
         border-bottom: 2px solid #FFE4EC !important;
         box-shadow: 0 4px 18px -4px rgba(255, 56, 112, 0.08) !important;
@@ -118,7 +231,7 @@ if (!defined('BASE_URL')) {
     header.bg-primary h2, 
     header.bg-primary h3 {
         color: #5C2D16 !important;
-        font-weight: 800 !important;
+        font-weight: 600 !important;
         letter-spacing: -0.01em;
     }
     header.bg-primary p {
@@ -155,6 +268,74 @@ if (!defined('BASE_URL')) {
     }
     header.bg-primary .bg-black\/20 i {
         color: #FF3870 !important;
+    }
+
+    /* ===== HOVER RULES: CLEAN PINK & SOFT TONES (NO DARK BROWN ON HOVER) ===== */
+    /* 1. Teks dan Link saat di-hover: menjadi Pink */
+    .text-\[\#5C2D16\], .text-\[\#4A2311\], .text-\[\#8C5638\], .text-chocolate {
+        transition: color 0.15s ease, background-color 0.15s ease;
+    }
+    a.text-\[\#5C2D16\]:hover,
+    a.text-\[\#4A2311\]:hover,
+    a.text-\[\#8C5638\]:hover,
+    a.text-chocolate:hover,
+    button:hover > .text-\[\#5C2D16\],
+    a:hover > .text-\[\#5C2D16\],
+    .hover\:text-\[\#FF3870\]:hover {
+        color: #FF3870 !important;
+    }
+
+    /* 2. Tombol Pink saat di-hover: menjadi Dark Pink (#E02360), BUKAN coklat */
+    .bg-\[\#FF3870\], .bg-primary, .bg-pink-600, .bg-pink-500 {
+        transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    }
+    button.bg-\[\#FF3870\]:hover,
+    button.bg-primary:hover,
+    button.bg-pink-600:hover,
+    a.bg-\[\#FF3870\]:hover,
+    a.bg-primary:hover,
+    .hover\:bg-\[\#E02360\]:hover,
+    .hover\:bg-pink-700:hover {
+        background-color: #E02360 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* 3. Menghilangkan semua warna biru dan sisa hover biru di seluruh halaman */
+    .bg-blue-600, .bg-blue-700, .bg-blue-500, .bg-blue-800 {
+        background-color: #FF3870 !important;
+        color: #FFFFFF !important;
+    }
+    .bg-blue-50 {
+        background-color: #FFF0F5 !important;
+    }
+    .bg-blue-100 {
+        background-color: #FFE2EC !important;
+    }
+    .text-blue-600, .text-blue-700, .text-blue-500, .text-blue-400, .text-blue-800 {
+        color: #FF3870 !important;
+    }
+    .border-blue-100, .border-blue-200, .border-blue-300, .border-blue-400 {
+        border-color: #FFC5D8 !important;
+    }
+    .border-blue-500, .border-blue-600 {
+        border-color: #FF3870 !important;
+    }
+    .hover\:bg-blue-600:hover, .hover\:bg-blue-700:hover, .hover\:bg-blue-800:hover, .hover\:bg-blue-500:hover {
+        background-color: #E02360 !important;
+        color: #FFFFFF !important;
+    }
+    .hover\:text-blue-600:hover, .hover\:text-blue-700:hover, .hover\:text-blue-800:hover, .hover\:text-blue-500:hover {
+        color: #FF3870 !important;
+    }
+    .hover\:bg-blue-50:hover {
+        background-color: #FFF0F5 !important;
+        color: #FF3870 !important;
+    }
+    .hover\:bg-blue-100:hover {
+        background-color: #FFC5D8 !important;
+    }
+    .hover\:border-blue-200:hover, .hover\:border-blue-300:hover {
+        border-color: #FF3870 !important;
     }
 </style>
 

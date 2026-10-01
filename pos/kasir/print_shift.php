@@ -190,7 +190,8 @@ function fRp($val) {
         }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         .btn-usb { background: #10b981; }
-        .btn-bt { background: #3b82f6; }
+        .btn-bt { background: #5C2D16; }
+        .btn-bt:hover { background: #FF3870; }
         .btn-close { background: #64748b; }
 
         @media print {

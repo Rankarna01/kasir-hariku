@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../../config/auth.php';
 $is_localhost = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $base_sub = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/pos/') !== false ? trim(explode('/pos/', $_SERVER['SCRIPT_NAME'])[0], '/') : 'kasir-hariku';

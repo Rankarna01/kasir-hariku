@@ -149,7 +149,8 @@ try {
         .btn:hover { opacity: 0.94; transform: translateY(-1px); }
         .btn:active { transform: translateY(0); }
         
-        .btn-print { background: #2563eb; color: #ffffff; font-size: 12px; padding: 11px 14px; box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
+        .btn-print { background: #FF3870; color: #ffffff; font-size: 12px; padding: 11px 14px; box-shadow: 0 4px 10px rgba(255,56,112,0.25); }
+        .btn-print:hover { background: #5C2D16; }
         .btn-bt { background: #6366f1; color: #ffffff; box-shadow: 0 3px 8px rgba(99,102,241,0.2); }
         .btn-usb { background: #059669; color: #ffffff; }
         .btn-serial { background: #0d9488; color: #ffffff; }
@@ -293,7 +294,7 @@ try {
                     <button type="button" id="btn-disconnect-printer" onclick="putuskanPrinter()" style="display: none; background: none; border: none; padding: 0; color: #ef4444; font-size: 9.5px; font-weight: 800; cursor: pointer;">
                         <i class="fa-solid fa-link-slash"></i> Putuskan / Ganti
                     </button>
-                    <a href="../pengaturan/printer/index.php" target="_blank" style="color: #2563eb; text-decoration: none; font-weight: 800;">
+                    <a href="../pengaturan/printer/index.php" target="_blank" style="color: #FF3870; text-decoration: none; font-weight: 800;">
                         <i class="fa-solid fa-gear"></i> Pengaturan
                     </a>
                 </div>
