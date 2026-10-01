@@ -54,27 +54,30 @@ if (!defined('BASE_URL')) {
             || (isset($_SERVER['SERVER_PORT']) && (int) $_SERVER['SERVER_PORT'] === 443);
         $protocol = $is_https ? 'https://' : 'http://';
 
-        // Turunkan folder aplikasi dari DOCUMENT_ROOT agar bekerja baik saat
-        // dipasang di root domain maupun di subfolder seperti /pos-lovecakes/.
-        $app_root = realpath(dirname(__DIR__));
-        $document_root = isset($_SERVER['DOCUMENT_ROOT']) ? realpath($_SERVER['DOCUMENT_ROOT']) : false;
+        // Turunkan folder aplikasi dari DOCUMENT_ROOT agar bekerja dinamis saat
+        // dipasang di root domain, localhost, maupun subfolder jaringan lokal
+        $app_root = str_replace('\\', '/', rtrim(realpath(dirname(__DIR__)), '/'));
+        $document_root = isset($_SERVER['DOCUMENT_ROOT']) && !empty($_SERVER['DOCUMENT_ROOT']) 
+            ? str_replace('\\', '/', rtrim(realpath($_SERVER['DOCUMENT_ROOT']), '/')) 
+            : '';
         $folder = '/';
 
-        if ($app_root && $document_root) {
-            $normalized_app_root = str_replace('\\', '/', $app_root);
-            $normalized_document_root = rtrim(str_replace('\\', '/', $document_root), '/');
-            $document_prefix = $normalized_document_root . '/';
-
-            if ($normalized_app_root === $normalized_document_root) {
-                $folder = '/';
-            } elseif (str_starts_with($normalized_app_root . '/', $document_prefix)) {
-                $relative_path = substr($normalized_app_root, strlen($normalized_document_root));
-                $folder = '/' . trim($relative_path, '/') . '/';
+        if (!empty($document_root) && $app_root === $document_root) {
+            $folder = '/';
+        } elseif (!empty($document_root) && str_starts_with($app_root . '/', $document_root . '/')) {
+            $relative_path = substr($app_root, strlen($document_root));
+            $folder = '/' . trim($relative_path, '/') . '/';
+        } else {
+            // Deteksi cerdas dari script path / URL saat ini
+            $script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+            if (preg_match('#^(.*?/(?:sistem-kasir/kasir-hariku|kasir-hariku))#i', $script, $matches)) {
+                $folder = rtrim($matches[1], '/') . '/';
+            } else {
+                $folder = '/sistem-kasir/kasir-hariku/';
             }
-        } elseif ($is_local_request) {
-            $folder = '/pos-lovecakes/';
         }
 
+        if ($folder === '//') $folder = '/';
         define('BASE_URL', $protocol . $host . $folder);
     }
 }

@@ -93,10 +93,8 @@ $page_title = "Katalog Produk - Love Cakes POS";
                                         <span class="text-[8px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-extrabold">OUTLET</span>
                                     </div>
                                     
-                                    <div class="flex justify-between items-center gap-1.5">
-                                        <div class="px-2 py-1 rounded-lg border flex-1 flex items-center justify-center text-[9px] font-black tracking-wide" 
-                                             :class="item.stock > 0 ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-500'">
-                                             <span x-text="item.stock > 0 ? 'STOK: ' + item.stock : 'HABIS'"></span>
+                                        <div class="px-2 py-1 rounded-lg border border-emerald-100 bg-emerald-50 flex-1 flex items-center justify-center text-[9px] font-black tracking-wide text-emerald-600">
+                                             <span>TERSEDIA</span>
                                         </div>
                                         
                                         <button @click="printBarcode(item)" class="bg-slate-100 hover:bg-slate-800 hover:text-white text-slate-600 w-6 h-6 rounded-lg flex items-center justify-center transition-colors border border-slate-200 hover:border-slate-800 shadow-sm" title="Cetak Stiker Barcode">

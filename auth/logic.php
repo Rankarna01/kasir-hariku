@@ -8,7 +8,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once '../config/database.php'; 
+require_once __DIR__ . '/../config/env.php';
+require_once __DIR__ . '/../config/database.php'; 
 
 header('Content-Type: application/json');
 $action = $_POST['action'] ?? '';
@@ -44,13 +45,7 @@ if ($action === 'login_pos') {
             $_SESSION['pos_store_code'] = $user['store_code'] ?? 'GLOBAL';
 
             // Setup URL
-            $full_base_url = defined('BASE_URL') ? BASE_URL : '';
-            if (empty($full_base_url)) {
-                $is_localhost = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false);
-                $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || ($_SERVER['SERVER_PORT'] ?? 80) == 443) ? "https://" : "http://";
-                $folder = $is_localhost ? '/pos-lovecakes/' : '/';
-                $full_base_url = $protocol . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $folder;
-            }
+            $full_base_url = BASE_URL;
 
             // 🎯 REDIRECT BERDASARKAN ROLE
             $role_name_lower = strtolower($user['role_name'] ?? '');

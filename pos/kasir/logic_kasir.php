@@ -347,7 +347,8 @@ if ($action === 'checkout') {
         $disc_val  = !empty($item['discount_value']) ? (float)$item['discount_value'] : 0;
         $stmt_detail->execute([$sale_id, $prod_id, $is_custom, $custom_name, $item['price'], $item['qty'], $item['subtotal'], $disc_type, $disc_val, $item_created_by]);
 
-        // Potong stok produk katalog (baik Reguler maupun PO)
+        // Potong stok produk katalog dinonaktifkan (stok tidak berkurang saat input transaksi kasir)
+        /*
         if (!$is_custom) { 
             $wh_id = !empty($_SESSION['pos_warehouse_id']) ? intval($_SESSION['pos_warehouse_id']) : 1;
             $stmt_potong_wh = $pdo->prepare("INSERT INTO product_warehouse_stocks (product_id, warehouse_id, stock) VALUES (?, ?, -?) ON DUPLICATE KEY UPDATE stock = stock - ?");
@@ -355,6 +356,7 @@ if ($action === 'checkout') {
 
             $stmt_potong_stok->execute([$item['qty'], $prod_id]); 
         }
+        */
 
         // ============================================================
         // PENGURANGAN BAHAN BAKU OTOMATIS UNTUK ITEM CUSTOM

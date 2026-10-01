@@ -1,11 +1,5 @@
 <?php
-$is_localhost = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$folder = $is_localhost ? '/pos-lovecakes/' : '/';
-
-if (!defined('BASE_URL')) { 
-    define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder); 
-}
+require_once __DIR__ . '/../config/env.php';
 ?>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -80,7 +74,7 @@ if (!defined('BASE_URL')) {
     if ('caches' in window) {
         caches.keys().then(function(names) {
             for (let name of names) {
-                if (name !== 'lovecakes-pos-v7') {
+                if (name !== 'lovecakes-pos-v8') {
                     caches.delete(name);
                 }
             }

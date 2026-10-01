@@ -91,7 +91,10 @@ if (!in_array($role, ['admin', 'owner', 'superadmin', 'backoffice'])) {
         '/pos/pengaturan/pajak/',
         '/pos/pengaturan/notifikasi/',
         '/pos/pengaturan/pembayaran/',
-        '/pos/opname/'
+        '/pos/opname/',
+        '/pos/master_gudang/',
+        '/pos/master_produk/',
+        '/pos/master_kategori/'
     ];
 
     $is_blocked = false;

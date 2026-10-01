@@ -127,7 +127,8 @@ if ($action === 'get_master_data') {
 
             $stmt_detail->execute([$sale_id, $prod_id, $is_custom, $custom_name, $item['price'], $item['qty'], $item['subtotal']]);
 
-            // Potong stok otomatis JIKA BUKAN ITEM CUSTOM dan BUKAN PO
+            // Potong stok otomatis dinonaktifkan (stok tidak berkurang saat input transaksi kasir)
+            /*
             if (!$is_custom && !$is_po) {
                 $wh_id = !empty($_SESSION['pos_warehouse_id']) ? intval($_SESSION['pos_warehouse_id']) : 1;
                 $stmt_potong_wh = $pdo->prepare("INSERT INTO product_warehouse_stocks (product_id, warehouse_id, stock) VALUES (?, ?, -?) ON DUPLICATE KEY UPDATE stock = stock - ?");
@@ -136,6 +137,7 @@ if ($action === 'get_master_data') {
                 $stmt_potong_stok->execute([$item['qty'], $prod_id]);
                 $stmt_history->execute([$prod_id, $item['qty'], $invoice_no]);
             }
+            */
         }
 
         if (!empty($data['voucher_code'])) {
