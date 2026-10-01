@@ -911,7 +911,7 @@ INSERT INTO `pos_settings` (`id`, `setting_key`, `setting_value`) VALUES
 (58, 'barcode_show_price', '1'),
 (59, 'barcode_show_expired', '0'),
 (60, 'barcode_show_category', '0'),
-(100, 'enable_device_restriction', '1'),
+(100, 'enable_device_restriction', '0'),
 (101, 'device_reg_passcode', '889900');
 
 -- --------------------------------------------------------

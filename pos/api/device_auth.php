@@ -39,67 +39,13 @@ function getPosSetting($pdo, $key, $default = '') {
     }
 }
 
-// ----------------------------------------------------
-// 1. CHECK STATUS (Verifikasi Token & Saklar Global)
-// ----------------------------------------------------
 if ($action === 'check_status') {
-    $is_restricted = getPosSetting($pdo, 'enable_device_restriction', '0') === '1';
-    $device_token = trim($_REQUEST['device_token'] ?? '');
-
-    if (!$is_restricted) {
-        echo json_encode([
-            'status' => 'success',
-            'is_restricted' => false,
-            'is_valid' => true,
-            'message' => 'Pembatasan perangkat nonaktif.'
-        ]);
-        exit;
-    }
-
-    if (empty($device_token)) {
-        echo json_encode([
-            'status' => 'locked',
-            'is_restricted' => true,
-            'is_valid' => false,
-            'message' => 'Perangkat ini belum didaftarkan di sistem POS.'
-        ]);
-        exit;
-    }
-
-    try {
-        $stmt = $pdo->prepare("SELECT * FROM pos_registered_devices WHERE device_token = ? LIMIT 1");
-        $stmt->execute([$device_token]);
-        $device = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($device && intval($device['is_active']) === 1) {
-            // Update last active time & IP
-            $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-            $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
-            $updateStmt = $pdo->prepare("UPDATE pos_registered_devices SET last_active_at = NOW(), registered_ip = ?, user_agent = ? WHERE id = ?");
-            $updateStmt->execute([$ip, $ua, $device['id']]);
-
-            echo json_encode([
-                'status' => 'success',
-                'is_restricted' => true,
-                'is_valid' => true,
-                'device' => [
-                    'id' => $device['id'],
-                    'device_name' => $device['device_name'],
-                    'warehouse_id' => $device['warehouse_id'],
-                    'registered_ip' => $ip
-                ]
-            ]);
-        } else {
-            echo json_encode([
-                'status' => 'locked',
-                'is_restricted' => true,
-                'is_valid' => false,
-                'message' => $device ? 'Akses untuk perangkat ini telah dinonaktifkan oleh Admin.' : 'Perangkat ini belum terdaftar di sistem.'
-            ]);
-        }
-    } catch (Exception $e) {
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-    }
+    echo json_encode([
+        'status' => 'success',
+        'is_restricted' => false,
+        'is_valid' => true,
+        'message' => 'Pembatasan perangkat dinonaktifkan.'
+    ]);
     exit;
 }
 
