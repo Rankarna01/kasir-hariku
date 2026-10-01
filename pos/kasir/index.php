@@ -7,7 +7,7 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVE
 
 // URL UNTUK SISTEM POS
 $base_sub = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/pos/') !== false ? trim(explode('/pos/', $_SERVER['SCRIPT_NAME'])[0], '/') : 'kasir-hariku';
-$folder_pos = $is_localhost ? ($base_sub !== '' ? '/' . $base_sub . '/' : '/') : '/'; 
+$folder_pos = $is_localhost ? (defined('BASE_URL') ? parse_url(BASE_URL, PHP_URL_PATH) : ($base_sub !== '' ? '/' . $base_sub . '/' : '/')) : '/';
 if (!defined('BASE_URL')) { define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder_pos); }
 $IMG_BASE_URL = $is_localhost 
     ? "http://localhost/sim-produksi-kue/assets/img/" 

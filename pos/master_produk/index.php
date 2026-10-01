@@ -110,12 +110,13 @@ $page_title = "Data Produk - Love Cakes POS";
                                         <th class="p-4 w-36">Kategori</th>
                                         <th class="p-4 text-right w-36">Harga Modal</th>
                                         <th class="p-4 text-right w-44">Harga Jual (Off / On)</th>
+                                        <th class="p-4 text-center w-28">Status</th>
                                         <th class="p-4 text-center w-28">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-body" class="text-sm divide-y divide-slate-100 text-slate-700">
                                     <tr>
-                                        <td colspan="8" class="p-8 text-center text-slate-400 font-medium">
+                                        <td colspan="9" class="p-8 text-center text-slate-400 font-medium">
                                             <i class="fa-solid fa-circle-notch fa-spin mr-2 text-primary"></i> Memuat data produk...
                                         </td>
                                     </tr>
@@ -185,6 +186,22 @@ $page_title = "Data Produk - Love Cakes POS";
                     <input type="hidden" id="product_id" name="id">
                     <input type="hidden" id="old_image" name="old_image">
                     
+                    <!-- TOGGLER STATUS PRODUK -->
+                    <div class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                        <div>
+                            <div class="text-xs font-black text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-500" id="status-icon"></i>
+                                <span>Status Produk</span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-0.5" id="status-label">Produk Aktif (Dijual di Kasir)</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="is_active_toggle" value="1" checked onchange="updateToggleUI(this.checked)" class="sr-only peer">
+                            <input type="hidden" id="is_active" name="is_active" value="1">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                    </div>
+
                     <!-- PREVIEW GAMBAR -->
                     <div class="flex flex-col items-center justify-center mb-2">
                         <img id="image_preview" src="<?= BASE_URL ?>assets/img/no-image.svg" alt="Preview" class="w-28 h-28 object-cover rounded-2xl border-2 border-slate-200 shadow-xs mb-2 bg-slate-50">
@@ -212,19 +229,42 @@ $page_title = "Data Produk - Love Cakes POS";
                         <input type="text" id="name" name="name" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-slate-50 focus:bg-white font-bold text-sm" placeholder="Contoh: Roti Coklat Keju Special">
                     </div>
                     
-                    <!-- INPUT HARGA (MODAL, OFFLINE, ONLINE) -->
-                    <div class="grid grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-black text-slate-600 uppercase tracking-wider mb-1.5">Modal (Rp)</label>
-                            <input type="number" id="modal_price" name="modal_price" value="0" min="0" class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all bg-slate-50 focus:bg-white text-rose-600 font-bold text-sm">
+                    <!-- INPUT HARGA (DENGAN FORMAT TITIK RUPIAH) -->
+                    <div class="space-y-2">
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-black text-slate-600 uppercase tracking-wider mb-1.5">Modal (Rp)</label>
+                                <input type="text" inputmode="numeric" id="modal_price" name="modal_price" value="0" oninput="formatRupiahInput(this)" onfocus="setActivePriceField('modal_price')" class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all bg-slate-50 focus:bg-white text-rose-600 font-bold text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-black text-slate-600 uppercase tracking-wider mb-1.5">Jual Off (Rp) <span class="text-rose-500">*</span></label>
+                                <input type="text" inputmode="numeric" id="price" name="price" value="0" required oninput="formatRupiahInput(this)" onfocus="setActivePriceField('price')" class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all bg-slate-50 focus:bg-white text-emerald-600 font-bold text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-black text-slate-600 uppercase tracking-wider mb-1.5">Jual On (Rp)</label>
+                                <input type="text" inputmode="numeric" id="online_price" name="online_price" value="0" oninput="formatRupiahInput(this)" onfocus="setActivePriceField('online_price')" class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all bg-slate-50 focus:bg-white text-blue-600 font-bold text-sm">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[11px] font-black text-slate-600 uppercase tracking-wider mb-1.5">Jual Off (Rp) <span class="text-rose-500">*</span></label>
-                            <input type="number" id="price" name="price" value="0" min="0" required class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all bg-slate-50 focus:bg-white text-emerald-600 font-bold text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-black text-slate-600 uppercase tracking-wider mb-1.5">Jual On (Rp)</label>
-                            <input type="number" id="online_price" name="online_price" value="0" min="0" class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all bg-slate-50 focus:bg-white text-blue-600 font-bold text-sm">
+
+                        <!-- TOMBOL TAMBAH CEPAT NOMINAL -->
+                        <div class="bg-slate-50/90 p-2.5 rounded-xl border border-slate-200">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                                    <i class="fa-solid fa-bolt text-amber-500"></i> Tambah Cepat: <span id="activePriceName" class="text-primary font-black">Jual Off</span>
+                                </span>
+                                <button type="button" onclick="syncOnlinePrice()" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 underline">
+                                    Samakan On = Off
+                                </button>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                <button type="button" onclick="addQuickNominal(1000)" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-bold transition-all shadow-xs">+1.000</button>
+                                <button type="button" onclick="addQuickNominal(2000)" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-bold transition-all shadow-xs">+2.000</button>
+                                <button type="button" onclick="addQuickNominal(5000)" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-bold transition-all shadow-xs">+5.000</button>
+                                <button type="button" onclick="addQuickNominal(10000)" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-bold transition-all shadow-xs">+10.000</button>
+                                <button type="button" onclick="addQuickNominal(20000)" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-bold transition-all shadow-xs">+20.000</button>
+                                <button type="button" onclick="addQuickNominal(50000)" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-bold transition-all shadow-xs">+50.000</button>
+                                <button type="button" onclick="resetActivePrice()" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-[11px] font-bold transition-all ml-auto">Reset</button>
+                            </div>
                         </div>
                     </div>
                     

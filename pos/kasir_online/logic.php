@@ -44,7 +44,7 @@ if ($action === 'get_master_data') {
             FROM products p
             LEFT JOIN product_warehouse_stocks pws ON p.id = pws.product_id AND pws.warehouse_id = $selected_store_id
             LEFT JOIN warehouses w ON w.id = $selected_store_id
-            WHERE 1=1 AND (p.warehouse_id = $selected_store_id OR p.warehouse_id IS NULL OR p.warehouse_id = 0 OR p.warehouse_id = 1 OR $selected_store_id = 1)
+            WHERE 1=1 AND COALESCE(p.is_active, 1) = 1 AND (p.warehouse_id = $selected_store_id OR p.warehouse_id IS NULL OR p.warehouse_id = 0 OR p.warehouse_id = 1 OR $selected_store_id = 1)
             ORDER BY p.name ASC
         ";
         $products = $pdo->query($prod_sql)->fetchAll(PDO::FETCH_ASSOC);
