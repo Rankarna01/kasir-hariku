@@ -195,23 +195,51 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
         transition: opacity 0.2s ease, visibility 0.2s ease;
     }
 
-    /* ===== GLOBAL STYLING SEMUA TABEL DENGAN BACKGROUND PINK HARIKU ===== */
+    /* ===== GLOBAL STYLING SEMUA TABEL: HEADER PINK CERAH HARIKU & TEKS PUTIH ===== */
     table thead,
     table thead tr,
     table thead th {
-        background-color: #FFF0F5 !important; /* Soft Hariku Pink */
-        color: #5C2D16 !important; /* Coklat Hariku */
-        border-bottom: 1.5px solid #FFE4EC !important;
+        background-color: #FF3870 !important; /* Warna cerah seperti button Hariku Pink (#FF3870) */
+        color: #FFFFFF !important; /* Teks putih */
+        border-color: #E62058 !important;
+        border-bottom: 2px solid #E62058 !important;
         font-weight: 800 !important;
         letter-spacing: 0.025em !important;
     }
 
-    table thead th i {
-        color: #FF3870 !important;
+    table thead th,
+    table thead th span,
+    table thead th div,
+    table thead th p,
+    table thead th a,
+    table thead th button,
+    table thead td {
+        color: #FFFFFF !important;
     }
 
-    table tbody tr:hover {
-        background-color: #FFF5F8 !important;
+    table thead th i,
+    table thead td i {
+        color: #FFFFFF !important;
+    }
+
+    table thead tr:hover,
+    table thead th:hover {
+        background-color: #FF3870 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Tabel di-hover tidak berubah warna */
+    table tbody tr:hover,
+    table tbody tr:hover td,
+    table tbody tr:hover th,
+    table tr[class*="hover:"]:hover {
+        background-color: transparent !important;
+        transition: none !important;
+    }
+
+    table tbody tr.bg-white:hover,
+    table tbody tr[class*="bg-white"]:hover {
+        background-color: #FFFFFF !important;
     }
 
     /* Container utama nempel rapi ke sidebar (full width tanpa gap berlebih) */
