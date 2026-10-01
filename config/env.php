@@ -2,6 +2,8 @@
 /**
  * Simple Environment Loader for Love Cakes POS
  */
+date_default_timezone_set('Asia/Jakarta');
+
 if (!function_exists('env')) {
     function env($key, $default = null) {
         static $env_vars = null;

@@ -178,11 +178,8 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                     </div>
 
                     <!-- Tombol Action -->
-                    <div class="pt-2 flex items-center gap-2.5">
-                        <a href="<?= BASE_URL ?>auth/" class="py-3 px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition-all text-center">
-                            Ganti Akun
-                        </a>
-                        <button type="button" @click="openShift()" :disabled="isLoadingShift" class="flex-1 bg-gradient-to-r from-primary to-rose-600 hover:from-rose-600 hover:to-primary text-white font-black py-3 rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer">
+                    <div class="pt-2">
+                        <button type="button" @click="openShift()" :disabled="isLoadingShift" class="w-full bg-gradient-to-r from-primary to-rose-600 hover:from-rose-600 hover:to-primary text-white font-black py-3 rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer">
                             <i class="fa-solid fa-lock-open" :class="isLoadingShift ? 'fa-spin' : ''"></i>
                             <span x-text="isLoadingShift ? 'Membuka Kasir...' : 'BUKA KASIR SEKARANG'"></span>
                         </button>

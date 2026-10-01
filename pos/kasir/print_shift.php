@@ -1,5 +1,6 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/../../config/database.php';
 
 $shift_id = $_GET['id'] ?? 0;
@@ -16,6 +17,8 @@ $shift = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$shift) {
     die("Shift tidak ditemukan.");
 }
+
+$waktu_cetak = !empty($shift['end_time']) ? date('d M Y H:i', strtotime($shift['end_time'])) : date('d M Y H:i');
 
 $store_name = 'AYAM GORENG HARIKU';
 try {
@@ -261,7 +264,7 @@ function fRp($val) {
 
     <div class="flex">
         <span>Dicetak</span>
-        <span><?= date('d M Y H:i') ?></span>
+        <span><?= $waktu_cetak ?></span>
     </div>
     
     <div style="margin: 10px 0;">
@@ -324,7 +327,7 @@ function fRp($val) {
         const shiftData = {
             storeName: <?= json_encode($store_name) ?>,
             cashier: <?= json_encode($shift['cashier_name'] ?? 'Kasir') ?>,
-            printed: <?= json_encode(date('d M Y H:i')) ?>,
+            printed: <?= json_encode($waktu_cetak) ?>,
             start: <?= json_encode(date('d M Y H:i', strtotime($shift['start_time']))) ?>,
             end: <?= json_encode($shift['end_time'] ? date('d M Y H:i', strtotime($shift['end_time'])) : '-') ?>,
             tamu: <?= json_encode($total_tamu) ?>,

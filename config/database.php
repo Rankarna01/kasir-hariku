@@ -1,6 +1,8 @@
 <?php
 // config/database.php
 
+date_default_timezone_set('Asia/Jakarta');
+
 require_once __DIR__ . '/env.php';
 
 $host = function_exists('env') ? env('DB_HOST', 'localhost') : 'localhost';
