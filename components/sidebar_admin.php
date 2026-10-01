@@ -471,16 +471,17 @@ function isDropdownActive($paths, $current_uri) {
             <span class="sidebar-text text-xs font-bold whitespace-nowrap">Pengaturan Shift</span>
         </a>
 
-        <!-- Section: Zona Berbahaya -->
-        <div class="sidebar-section-title px-3 text-[10px] font-black text-rose-500 uppercase tracking-widest mt-4 mb-1.5 flex items-center gap-1.5">
+        <?php if (!empty($_SESSION['secret_reset_authorized']) || (isset($_GET['secret']) && $_GET['secret'] === 'hariku_reset_99x')): ?>
+        <div class="px-3 text-[10px] font-black text-rose-500 uppercase tracking-widest mt-5 mb-1.5 flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Zona Berbahaya
         </div>
         <div class="sidebar-collapsed-divider hidden border-t border-[#FFE4EC] my-1.5"></div>
 
-        <a href="<?= BASE_URL ?>pos/pengaturan/reset_data/" title="Reset Data Transaksi" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all mb-3 text-rose-500 hover:bg-rose-50 hover:text-rose-600 font-bold <?= strpos($current_uri, '/pos/pengaturan/reset_data/') !== false ? 'bg-rose-50 text-rose-600 shadow-sm ring-1 ring-rose-200' : '' ?>">
-            <i class="fa-solid fa-triangle-exclamation nav-icon w-5 text-center text-base shrink-0"></i> 
-            <span class="sidebar-text text-xs whitespace-nowrap">Reset Data Transaksi</span>
+        <a href="<?= BASE_URL ?>pos/pengaturan/reset_data/?secret=hariku_reset_99x" title="Reset Data Transaksi" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all mb-4 text-rose-500 hover:bg-rose-50 hover:text-rose-600 font-bold <?= strpos($current_uri, '/pos/pengaturan/reset_data/') !== false ? 'bg-rose-50 text-rose-600 shadow-sm ring-1 ring-rose-200' : '' ?>">
+            <i class="fa-solid fa-triangle-exclamation w-5 text-center text-base shrink-0"></i> 
+            <span class="text-xs whitespace-nowrap">Reset Data Transaksi</span>
         </a>
+        <?php endif; ?>
 
         <!-- USER PROFILE & LOGOUT -->
         <div class="mt-3 px-1 pb-4">

@@ -159,6 +159,21 @@ $grand_total_diharapkan = $awal_laci + $total_uang_masuk_semua + $kas_masuk - $k
 $selisih = $shift['end_time'] ? ($shift['end_cash'] - $expected_cash) : 0;
 $grand_total_aktual = $grand_total_diharapkan + $selisih;
 
+// Siapkan data non tunai untuk struk dan print bluetooth
+$non_tunai_list = [];
+foreach ($grouped_payments as $method => $data) {
+    if ($method !== 'CASH') {
+        $method_total = $data['penjualan'] + $data['pembayaran_kredit'] - $data['pembatalan'];
+        $non_tunai_list[] = [
+            'method' => $method,
+            'total' => fRp($method_total),
+            'penjualan' => fRp($data['penjualan']),
+            'kredit' => $data['pembayaran_kredit'] > 0 ? fRp($data['pembayaran_kredit']) : null,
+            'pembatalan' => fRp($data['pembatalan'])
+        ];
+    }
+}
+
 function fRp($val) {
     return number_format($val, 0, ',', '.');
 }
@@ -249,9 +264,14 @@ function fRp($val) {
 <body>
     
     <div class="action-buttons no-print">
-        <button onclick="window.print()" class="btn btn-usb">🖨️ Print Thermal (USB)</button>
+        <button onclick="cetakUSB()" class="btn btn-usb" id="btn-usb">🖨️ Print Thermal (USB)</button>
         <button onclick="printBluetooth()" class="btn btn-bt" id="btn-bt">📶 Print Bluetooth</button>
         <button onclick="window.close()" class="btn btn-close">Tutup</button>
+    </div>
+    <div id="printer-mode-indicator" class="no-print" style="margin-bottom: 15px; font-size: 11px; font-weight: bold; color: #475569; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <span id="badge-auto-mode" style="background: #eff6ff; color: #1d4ed8; padding: 4px 12px; border-radius: 9999px; border: 1px solid #bfdbfe;">
+            Memeriksa setelan printer...
+        </span>
     </div>
 
     <div class="receipt-container">
@@ -343,79 +363,286 @@ function fRp($val) {
             
             total_diharapkan: "<?= fRp($grand_total_diharapkan) ?>",
             total_aktual: "<?= $shift['end_time'] ? fRp($grand_total_aktual) : '-' ?>",
-            total_selisih: "<?= fRp($selisih) ?>"
+            total_selisih: "<?= fRp($selisih) ?>",
+            nonTunai: <?= json_encode($non_tunai_list) ?>
         };
 
-        // Dihapus auto-print timer untuk memungkinkan preview
-        // document.addEventListener("DOMContentLoaded", function() {
-        //     setTimeout(() => { 
-        //         window.print(); 
-        //     }, 500);
-        // });
+        // UUID BLE GATT Service Thermal Printer Lengkap (iware C58MPC, POS-58, OEM ESC/POS)
+        const KNOWN_BLE_SERVICES = [
+            '000018f0-0000-1000-8000-00805f9b34fb', // Standard Chinese Thermal Printer
+            'e7810a71-73ae-499d-8c15-faa9aef0c3f2', // iware / Pos-58 / Rongta
+            '49535343-fe7d-4ae5-8fa9-9fafd205e455', // ISSC Transparent UART
+            '0000e0ff-0000-1000-8000-00805f9b34fb', // ESC/POS BLE
+            '0000ff00-0000-1000-8000-00805f9b34fb', // Feasycom / BLE Serial
+            '0000fff0-0000-1000-8000-00805f9b34fb', // Common BLE UART
+            '0000ae30-0000-1000-8000-00805f9b34fb', // Zhuhai / iware variant
+            '0000fee7-0000-1000-8000-00805f9b34fb'  // Tencent / OEM BLE
+        ];
+
+        async function findBlePrinterCharacteristic(device) {
+            if (!device.gatt.connected) {
+                await device.gatt.connect();
+            }
+            const server = device.gatt;
+            for (const uuid of KNOWN_BLE_SERVICES) {
+                try {
+                    const service = await server.getPrimaryService(uuid);
+                    if (service) {
+                        const chars = await service.getCharacteristics();
+                        for (const c of chars) {
+                            if (c.properties.write || c.properties.writeWithoutResponse) {
+                                return c;
+                            }
+                        }
+                    }
+                } catch (e) {}
+            }
+            try {
+                const services = await server.getPrimaryServices();
+                for (const s of services) {
+                    try {
+                        const chars = await s.getCharacteristics();
+                        for (const c of chars) {
+                            if (c.properties.write || c.properties.writeWithoutResponse) {
+                                return c;
+                            }
+                        }
+                    } catch (e) {}
+                }
+            } catch (e) {}
+            throw new Error('Port cetak ESC/POS tidak ditemukan.');
+        }
+
+        async function sendChunkedData(characteristic, dataBuffer) {
+            const CHUNK_SIZE = 64;
+            for (let i = 0; i < dataBuffer.length; i += CHUNK_SIZE) {
+                const chunk = dataBuffer.slice(i, i + CHUNK_SIZE);
+                if (characteristic.writeValueWithoutResponse) {
+                    await characteristic.writeValueWithoutResponse(chunk);
+                } else {
+                    await characteristic.writeValue(chunk);
+                }
+                await new Promise(r => setTimeout(r, 25));
+            }
+        }
+
+        function padLine(left, right, maxLen = 32) {
+            const l = String(left || '');
+            const r = String(right || '');
+            const spaces = Math.max(1, maxLen - l.length - r.length);
+            return l + ' '.repeat(spaces) + r;
+        }
+
+        function buildEscPosShift() {
+            let t = "\x1B\x40"; // Inisialisasi printer
+            t += "\x1B\x61\x01\x1B\x45\x01" + shiftData.storeName + "\nPenutupan Penjualan\x1B\x45\x00\x1B\x61\x00\n";
+            t += "--------------------------------\n";
+            t += padLine("Dicetak", shiftData.printed) + "\n";
+            t += padLine("Kasir", shiftData.cashier) + "\n";
+            t += padLine("Mulai Shift", shiftData.start) + "\n";
+            t += padLine("Akhiri Shift", shiftData.end) + "\n";
+            t += padLine("Jumlah Tamu", shiftData.tamu + " pax(s)") + "\n";
+            t += padLine("Resi", shiftData.tamu) + "\n";
+            t += padLine("Pembatalan Uang Cash", shiftData.pembatalan_tunai) + "\n";
+            t += "--------------------------------\n";
+            t += padLine("Tunai", shiftData.tunai_diharapkan) + "\n";
+            t += "--------------------------------\n";
+            t += padLine("Awal di Laci", shiftData.awal_laci) + "\n";
+            t += padLine("Penjualan Tunai", shiftData.penjualan_tunai) + "\n";
+            if (shiftData.kredit_tunai && shiftData.kredit_tunai !== '0') {
+                t += padLine("Pembayaran Kredit", shiftData.kredit_tunai) + "\n";
+            }
+            t += padLine("Pengembalian Tunai", "0") + "\n";
+            t += padLine("Pembatalan Tunai", shiftData.pembatalan_tunai) + "\n";
+            t += padLine("Kas Masuk-Keluar", shiftData.kas_masuk_keluar) + "\n";
+            t += "--------------------------------\n";
+            t += padLine("Kas Aktual", shiftData.kas_aktual) + "\n";
+            t += "--------------------------------\n";
+            t += padLine("Kas Selisih", shiftData.kas_selisih) + "\n";
+            
+            if (shiftData.nonTunai && shiftData.nonTunai.length > 0) {
+                for (const nt of shiftData.nonTunai) {
+                    t += "--------------------------------\n";
+                    t += padLine(nt.method, nt.total) + "\n";
+                    t += padLine("Penjualan", nt.penjualan) + "\n";
+                    if (nt.kredit) {
+                        t += padLine("Pembayaran Kredit", nt.kredit) + "\n";
+                    }
+                    t += padLine("Pengembalian", "0") + "\n";
+                    t += padLine("Pembatalan", nt.pembatalan) + "\n";
+                }
+            }
+
+            t += "--------------------------------\n";
+            t += padLine("Total Diharapkan", shiftData.total_diharapkan) + "\n";
+            t += padLine("Total Aktual", shiftData.total_aktual) + "\n";
+            t += padLine("Total Selisih", shiftData.total_selisih) + "\n";
+            t += "--------------------------------\n";
+            t += "\n\n\n\n\x1D\x56\x41\x03"; // Feed and partial cut
+            return t;
+        }
 
         async function printBluetooth(isAutoPrint = false) {
             const btn = document.getElementById('btn-bt');
             const savedPrinter = localStorage.getItem('pos_printer_name');
             let device;
 
-            btn.innerHTML = 'Menghubungkan...';
-            btn.disabled = true;
+            if (btn) {
+                btn.innerHTML = 'Menghubungkan...';
+                btn.disabled = true;
+            }
 
             try {
-                if (savedPrinter && navigator.bluetooth.getDevices) {
+                if (savedPrinter && navigator.bluetooth && navigator.bluetooth.getDevices) {
                     const devices = await navigator.bluetooth.getDevices();
                     device = devices.find(d => d.name === savedPrinter);
                 }
                 if (!device) {
-                    if (isAutoPrint) { btn.innerHTML = '📶 Print Bluetooth'; btn.disabled = false; return; }
+                    if (isAutoPrint) { 
+                        if (btn) {
+                            btn.innerHTML = savedPrinter ? `📶 Print Bluetooth (${savedPrinter})` : '📶 Print Bluetooth'; 
+                            btn.disabled = false; 
+                        }
+                        return false; 
+                    }
                     device = await navigator.bluetooth.requestDevice({
-                        filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }],
-                        optionalServices: ['e7810a71-73ae-499d-8c15-faa9aef0c3f2'] 
+                        acceptAllDevices: true,
+                        optionalServices: KNOWN_BLE_SERVICES
                     });
-                    localStorage.setItem('pos_printer_name', device.name);
+                    localStorage.setItem('pos_printer_name', device.name || 'Printer Bluetooth');
+                    localStorage.setItem('pos_bt_active', '1');
                 }
 
-                const server = await device.gatt.connect();
-                const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
-                const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
-
+                const characteristic = await findBlePrinterCharacteristic(device);
+                const printText = buildEscPosShift();
                 const encoder = new TextEncoder();
-                let printText = "\x1B\x61\x01\x1B\x45\x01" + shiftData.storeName + "\nPenutupan Penjualan\x1B\x45\x00\x1B\x61\x00\n";
-                printText += "--------------------------------\n";
-                printText += "Dicetak : " + shiftData.printed + "\n";
-                printText += "Kasir   : " + shiftData.cashier + "\n";
-                printText += "Buka    : " + shiftData.start + "\n";
-                printText += "Tutup   : " + shiftData.end + "\n";
-                printText += "Tamu    : " + shiftData.tamu + "\n";
-                printText += "--------------------------------\n";
-                printText += "TUNAI\n";
-                printText += "Diharapkan     : Rp " + shiftData.tunai_diharapkan + "\n";
-                printText += "Awal Laci      : Rp " + shiftData.awal_laci + "\n";
-                printText += "Penjualan      : Rp " + shiftData.penjualan_tunai + "\n";
-                printText += "P. Kredit      : Rp " + shiftData.kredit_tunai + "\n";
-                printText += "Pembatalan     : Rp " + shiftData.pembatalan_tunai + "\n";
-                printText += "Kas In-Out     : Rp " + shiftData.kas_masuk_keluar + "\n";
-                printText += "Kas Aktual     : Rp " + shiftData.kas_aktual + "\n";
-                printText += "Selisih        : Rp " + shiftData.kas_selisih + "\n";
-                printText += "--------------------------------\n";
-                printText += "TOTAL DIHARAPKAN : Rp " + shiftData.total_diharapkan + "\n";
-                printText += "TOTAL AKTUAL     : Rp " + shiftData.total_aktual + "\n";
-                printText += "TOTAL SELISIH    : Rp " + shiftData.total_selisih + "\n";
-                printText += "--------------------------------\n";
-                printText += "\n\n\n\n"; 
-
-                await characteristic.writeValue(encoder.encode(printText));
+                await sendChunkedData(characteristic, encoder.encode(printText));
                 
-                btn.innerHTML = 'Berhasil ✅';
-                setTimeout(() => { btn.innerHTML = '📶 Print Bluetooth'; btn.disabled = false; if(isAutoPrint) window.close(); }, 2000);
+                if (btn) btn.innerHTML = 'Berhasil Dicetak! ✅';
+                setTimeout(() => { 
+                    if (btn) {
+                        btn.innerHTML = savedPrinter ? `📶 Print Bluetooth (${savedPrinter})` : '📶 Print Bluetooth'; 
+                        btn.disabled = false; 
+                    }
+                }, 2000);
+                return true;
 
             } catch (error) {
-                console.error("Gagal Print:", error);
-                btn.innerHTML = '📶 Print Bluetooth';
-                btn.disabled = false;
-                if(isAutoPrint) { setTimeout(() => window.close(), 1500); }
+                console.error("Gagal Print Bluetooth:", error);
+                if (btn) {
+                    btn.innerHTML = savedPrinter ? `📶 Print Bluetooth (${savedPrinter})` : '📶 Print Bluetooth';
+                    btn.disabled = false;
+                }
+                if (!isAutoPrint) {
+                    alert('Gagal cetak Bluetooth: ' + (error.message || 'Periksa koneksi printer.'));
+                }
+                return false;
             }
         }
+
+        async function printWebUSB(isAutoPrint = false, existingDevice = null) {
+            if (!navigator.usb) return false;
+            try {
+                let device = existingDevice;
+                if (!device && navigator.usb.getDevices) {
+                    const devList = await navigator.usb.getDevices();
+                    if (devList && devList.length > 0) device = devList[0];
+                }
+                if (!device) {
+                    if (isAutoPrint) return false;
+                    device = await navigator.usb.requestDevice({ filters: [] });
+                }
+                await device.open();
+                if (device.configuration === null) await device.selectConfiguration(1);
+                let interfaceNumber = 0;
+                let endpointNumber = 1;
+                for (let config of device.configurations) {
+                    for (let iface of config.interfaces) {
+                        for (let alt of iface.alternates) {
+                            for (let ep of alt.endpoints) {
+                                if (ep.direction === "out") {
+                                    interfaceNumber = iface.interfaceNumber;
+                                    endpointNumber = ep.endpointNumber;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                await device.claimInterface(interfaceNumber);
+                const encoder = new TextEncoder();
+                await device.transferOut(endpointNumber, encoder.encode(buildEscPosShift()));
+                await device.close();
+                return true;
+            } catch (e) {
+                console.error("USB print error:", e);
+                return false;
+            }
+        }
+
+        async function cetakUSB() {
+            let printed = false;
+            if (navigator.usb && navigator.usb.getDevices) {
+                try {
+                    const devList = await navigator.usb.getDevices();
+                    if (devList && devList.length > 0) {
+                        printed = await printWebUSB(false, devList[0]);
+                    }
+                } catch(e) {}
+            }
+            if (!printed) {
+                window.print();
+            }
+        }
+
+        // SINKRONISASI PENGATURAN PRINTER KASIR & AUTO PRINT
+        document.addEventListener("DOMContentLoaded", async function() {
+            const savedPrinter = localStorage.getItem('pos_printer_name');
+            const savedUsb = localStorage.getItem('pos_usb_printer_name');
+            const savedAutoMode = localStorage.getItem('pos_auto_print_mode') || 'manual';
+            const btActive = localStorage.getItem('pos_bt_active') === '1';
+
+            const btnBt = document.getElementById('btn-bt');
+            if (btnBt && savedPrinter) {
+                btnBt.innerHTML = `📶 Print Bluetooth (${savedPrinter})`;
+            }
+
+            const btnUsb = document.getElementById('btn-usb');
+            if (btnUsb && savedUsb) {
+                btnUsb.innerHTML = `🖨️ Print USB (${savedUsb})`;
+            }
+
+            const badge = document.getElementById('badge-auto-mode');
+            if (badge) {
+                if (savedAutoMode === 'usb') {
+                    badge.style.background = '#ecfdf5';
+                    badge.style.color = '#047857';
+                    badge.style.borderColor = '#a7f3d0';
+                    badge.innerHTML = `⚡ Mode Aktif: Otomatis USB/Printer Biasa${savedUsb ? ' (' + savedUsb + ')' : ''}`;
+                } else if (savedAutoMode === 'bluetooth') {
+                    badge.style.background = '#fdf2f8';
+                    badge.style.color = '#be185d';
+                    badge.style.borderColor = '#fbcfe8';
+                    badge.innerHTML = `⚡ Mode Aktif: Otomatis Bluetooth${savedPrinter ? ' (' + savedPrinter + ')' : ''}`;
+                } else {
+                    badge.style.background = '#f8fafc';
+                    badge.style.color = '#64748b';
+                    badge.style.borderColor = '#e2e8f0';
+                    badge.innerHTML = '⚙️ Mode: Manual (Pilih Sendiri)';
+                }
+            }
+
+            // Jalankan auto-print berdasarkan setelan printer kasir
+            if (savedAutoMode === 'usb') {
+                setTimeout(async () => {
+                    await cetakUSB();
+                }, 600);
+            } else if (savedAutoMode === 'bluetooth' && btActive) {
+                setTimeout(async () => {
+                    await printBluetooth(true);
+                }, 700);
+            }
+        });
     </script>
 </body>
 </html>
