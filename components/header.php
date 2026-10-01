@@ -11,7 +11,11 @@ if (!defined('BASE_URL')) {
 ?>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title><?= $page_title ?? 'Ayam Goreng Hariku - POS Kasir' ?></title>
+<?php
+$raw_title = $page_title ?? 'Ayam Goreng Hariku - POS Kasir';
+$display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
+?>
+<title><?= htmlspecialchars($display_title) ?></title>
 
 <link rel="manifest" href="<?= BASE_URL ?>manifest.json">
 
@@ -19,13 +23,31 @@ if (!defined('BASE_URL')) {
 <link rel="apple-touch-icon" href="<?= BASE_URL ?>assets/img/logo-hariku.png">
 <link rel="icon" type="image/png" href="<?= BASE_URL ?>assets/img/logo-hariku.png">
 
+<!-- Web Fonts: Avenir / Avenir Next with high-quality fallback -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.cdnfonts.com/css/avenir" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/avenir-next-lt-pro" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
     tailwind.config = {
         corePlugins: { preflight: true },
         theme: {
             extend: {
-                fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                fontFamily: { 
+                    sans: ['Avenir', 'Avenir Next', 'Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'] 
+                },
+                fontWeight: {
+                    light: '400',
+                    normal: '500',
+                    medium: '500',
+                    semibold: '600',
+                    bold: '600',
+                    extrabold: '700',
+                    black: '700'
+                },
                 colors: {
                     surface: '#FFFFFF',
                     background: '#FFFFFF',
@@ -54,6 +76,19 @@ if (!defined('BASE_URL')) {
                         700: '#5C2D16',
                         800: '#4A2311',
                         900: '#33170B'
+                    },
+                    // Map blue to Hariku Pink & Coklat to neutralize remaining blue classes
+                    blue: {
+                        50: '#FFF0F5',
+                        100: '#FFE2EC',
+                        200: '#FFC5D8',
+                        300: '#FF97B6',
+                        400: '#FF6492',
+                        500: '#FF3870',
+                        600: '#FF3870',
+                        700: '#E02360',
+                        800: '#5C2D16',
+                        900: '#4A2311',
                     },
                     hariku: {
                         pink: '#FF3870',
@@ -86,15 +121,17 @@ if (!defined('BASE_URL')) {
 <script src="<?= BASE_URL ?>assets/js/pos_db.js"></script>
 
 <style>
-    @font-face {
-        font-family: 'Poppins';
-        src: url('<?= BASE_URL ?>assets/fonts/poppins.woff2') format('woff2');
-        font-weight: normal; font-style: normal;
+    /* ===== GLOBAL FONT: AVENIR (STANDARD 500) ===== */
+    *, html, body, button, input, select, textarea, div, p, span, h1, h2, h3, h4, h5, h6, a, table, td, th {
+        font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-weight: 500;
+    }
+    strong, b, .font-bold, .font-black, .font-extrabold {
+        font-weight: 600 !important;
     }
     body { 
-        font-family: 'Poppins', sans-serif !important; 
         background-color: #FFFFFF !important; 
-        color: #33170B;
+        color: #4A2311;
     }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -105,7 +142,7 @@ if (!defined('BASE_URL')) {
     [x-cloak] { display: none !important; }
     
     #global-loader { display: none; backdrop-filter: blur(4px); }
-    div:where(.swal2-container) { font-family: 'Poppins', sans-serif !important; }
+    div:where(.swal2-container) { font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', sans-serif !important; }
 
     /* ===== HARIKU BRAND HEADER / TOPBAR ===== */
     header.bg-primary {
@@ -118,7 +155,7 @@ if (!defined('BASE_URL')) {
     header.bg-primary h2, 
     header.bg-primary h3 {
         color: #5C2D16 !important;
-        font-weight: 800 !important;
+        font-weight: 600 !important;
         letter-spacing: -0.01em;
     }
     header.bg-primary p {
@@ -155,6 +192,87 @@ if (!defined('BASE_URL')) {
     }
     header.bg-primary .bg-black\/20 i {
         color: #FF3870 !important;
+    }
+
+    /* ===== ATURAN WARNA HOVER PINK & COKLAT ===== */
+    /* 1. Warna Coklat saat di-hover berubah jadi Pink */
+    .text-\[\#5C2D16\], .text-\[\#4A2311\], .text-\[\#8C5638\], .text-chocolate {
+        transition: color 0.15s ease, background-color 0.15s ease;
+    }
+    a.text-\[\#5C2D16\]:hover,
+    a.text-\[\#4A2311\]:hover,
+    a.text-\[\#8C5638\]:hover,
+    a.text-chocolate:hover,
+    button:hover > .text-\[\#5C2D16\],
+    a:hover > .text-\[\#5C2D16\],
+    .hover\:text-\[\#FF3870\]:hover {
+        color: #FF3870 !important;
+    }
+    .bg-\[\#5C2D16\]:hover,
+    .bg-chocolate:hover,
+    .hover\:bg-\[\#FF3870\]:hover {
+        background-color: #FF3870 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* 2. Warna Pink saat di-hover berubah jadi Coklat */
+    .text-\[\#FF3870\], .text-primary, .text-pink-600, .text-pink-500 {
+        transition: color 0.15s ease, background-color 0.15s ease;
+    }
+    a.text-\[\#FF3870\]:hover,
+    a.text-primary:hover,
+    a.text-pink-600:hover,
+    button:hover > .text-\[\#FF3870\],
+    a:hover > .text-\[\#FF3870\],
+    .hover\:text-\[\#5C2D16\]:hover {
+        color: #5C2D16 !important;
+    }
+    .bg-\[\#FF3870\]:hover,
+    .bg-primary:hover,
+    .bg-pink-600:hover,
+    button.bg-\[\#FF3870\]:hover,
+    button.bg-primary:hover,
+    .hover\:bg-\[\#5C2D16\]:hover {
+        background-color: #5C2D16 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* 3. Menghilangkan semua warna biru dan sisa hover biru di seluruh halaman */
+    .bg-blue-600, .bg-blue-700, .bg-blue-500, .bg-blue-800 {
+        background-color: #FF3870 !important;
+        color: #FFFFFF !important;
+    }
+    .bg-blue-50 {
+        background-color: #FFF0F5 !important;
+    }
+    .bg-blue-100 {
+        background-color: #FFE2EC !important;
+    }
+    .text-blue-600, .text-blue-700, .text-blue-500, .text-blue-400, .text-blue-800 {
+        color: #FF3870 !important;
+    }
+    .border-blue-100, .border-blue-200, .border-blue-300, .border-blue-400 {
+        border-color: #FFC5D8 !important;
+    }
+    .border-blue-500, .border-blue-600 {
+        border-color: #FF3870 !important;
+    }
+    .hover\:bg-blue-600:hover, .hover\:bg-blue-700:hover, .hover\:bg-blue-800:hover, .hover\:bg-blue-500:hover {
+        background-color: #5C2D16 !important;
+        color: #FFFFFF !important;
+    }
+    .hover\:text-blue-600:hover, .hover\:text-blue-700:hover, .hover\:text-blue-800:hover, .hover\:text-blue-500:hover {
+        color: #FF3870 !important;
+    }
+    .hover\:bg-blue-50:hover {
+        background-color: #FFF0F5 !important;
+        color: #FF3870 !important;
+    }
+    .hover\:bg-blue-100:hover {
+        background-color: #FFC5D8 !important;
+    }
+    .hover\:border-blue-200:hover, .hover\:border-blue-300:hover {
+        border-color: #FF3870 !important;
     }
 </style>
 

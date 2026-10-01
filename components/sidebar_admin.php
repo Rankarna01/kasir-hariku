@@ -3,16 +3,16 @@ $current_uri = $_SERVER['REQUEST_URI'];
 
 function getNavClass($path, $current_uri) {
     if (strpos($current_uri, $path) !== false) {
-        return 'bg-gradient-to-r from-[#FF3870] to-[#E02360] text-white font-bold shadow-md shadow-pink-500/25 ring-1 ring-pink-400/50 active-nav-link';
+        return 'bg-[#FF3870] hover:bg-[#5C2D16] text-white font-medium shadow-md shadow-pink-500/20 ring-1 ring-pink-400/50 active-nav-link transition-all duration-150';
     }
-    return 'text-[#5C2D16]/80 hover:bg-[#FFF0F5] hover:text-[#FF3870] font-semibold transition-all duration-150';
+    return 'text-[#5C2D16] hover:bg-[#FFF0F5] hover:text-[#FF3870] font-medium transition-all duration-150';
 }
 
 function getSubNavClass($path, $current_uri) {
     if (strpos($current_uri, $path) !== false) {
-        return 'text-[#FF3870] font-black bg-[#FFF0F5] border-l-2 border-[#FF3870] pl-3';
+        return 'text-[#FF3870] hover:text-[#5C2D16] font-medium bg-[#FFF0F5] border-l-2 border-[#FF3870] pl-3 transition-all duration-150';
     }
-    return 'text-slate-500 hover:text-[#5C2D16] hover:bg-[#FFF0F5]/60 font-medium transition-all duration-150';
+    return 'text-[#5C2D16]/80 hover:text-[#FF3870] hover:bg-[#FFF0F5]/70 font-medium transition-all duration-150';
 }
 
 function isDropdownActive($paths, $current_uri) {
@@ -24,8 +24,10 @@ function isDropdownActive($paths, $current_uri) {
 ?>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
-    #main-sidebar { font-family: 'Poppins', sans-serif; }
+    #main-sidebar { 
+        font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', sans-serif !important; 
+        font-weight: 500;
+    }
     .custom-scrollbar::-webkit-scrollbar { width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #E7D5C4; border-radius: 10px; }

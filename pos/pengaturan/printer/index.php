@@ -39,7 +39,7 @@ $page_title = "Pengaturan Printer - Love Cakes POS";
                     <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-200 p-6">
                         <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
                             <h3 class="text-lg font-black text-slate-800 tracking-wide">
-                                <i class="fa-solid fa-print text-blue-500 mr-2"></i> Printer Thermal
+                                <i class="fa-solid fa-print text-[#FF3870] mr-2"></i> Printer Thermal
                             </h3>
                             <span class="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full" 
                                   :class="isConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"

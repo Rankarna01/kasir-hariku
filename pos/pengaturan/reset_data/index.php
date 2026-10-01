@@ -151,7 +151,7 @@ try {
                     icon: 'error',
                     title: 'Konfirmasi Gagal',
                     text: 'Anda harus mengetik tulisan RESET dengan huruf besar.',
-                    confirmButtonColor: '#3b82f6'
+                    confirmButtonColor: '#FF3870'
                 });
                 return;
             }
@@ -201,7 +201,7 @@ try {
                                 icon: 'error',
                                 title: 'Gagal',
                                 text: data.message || 'Terjadi kesalahan sistem.',
-                                confirmButtonColor: '#3b82f6'
+                                confirmButtonColor: '#FF3870'
                             });
                         }
                     })
