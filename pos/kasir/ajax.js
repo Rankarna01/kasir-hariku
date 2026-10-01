@@ -90,6 +90,7 @@ document.addEventListener('alpine:init', () => {
         needsShiftOpen: false, isLoadingShift: false, masterShifts: [],
         activeShiftName: '',
         startCashFormatted: '0',
+        shiftForm: { shift_id: '', start_cash: 0 },
         showCloseShiftModal: false, closeShiftCash: '', closeShiftCashFormatted: '',
 
         // --- KAS KELUAR ---
