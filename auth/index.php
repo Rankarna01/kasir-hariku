@@ -202,10 +202,6 @@ if (isset($_SESSION['pos_user_id'])) {
 
             <!-- Header Text -->
             <div class="mb-6 fade-in-up">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF0F5] border border-[#FFC5D8] mb-2">
-                    <span class="w-2 h-2 rounded-full bg-[#FF3870] animate-pulse"></span>
-                    <span class="text-[10px] font-black text-[#FF3870] uppercase tracking-wider">Portal Kasir & Admin</span>
-                </div>
                 <h2 class="text-2xl sm:text-3xl font-black text-[#4A2311] leading-tight">Selamat Datang!</h2>
                 <p class="text-[#8C5638] text-xs sm:text-sm mt-1 font-medium">Silakan tentukan peran akses dan masuk ke akun Anda.</p>
             </div>

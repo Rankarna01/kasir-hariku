@@ -50,8 +50,7 @@ $page_title = "Dashboard - Love Cakes POS";
 
         <main class="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-4 md:p-6 bg-[#f8fafc]">
             <div class="w-full space-y-6">
-                
-                <h3 class="font-black text-slate-800 text-lg md:text-xl">Sekilas "Love Cakes"</h3>
+            
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <a href="../pemasaran/diskon-otomatis/" class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md hover:border-primary/40 transition-all group">

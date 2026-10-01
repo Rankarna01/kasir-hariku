@@ -135,7 +135,7 @@ function isDropdownActive($paths, $current_uri) {
 
         <a href="<?= BASE_URL ?>pos/master_gudang/" title="Store & Gudang" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/master_gudang/', $current_uri) ?>">
             <i class="fa-solid fa-store w-5 text-center text-base shrink-0"></i> 
-            <span class="text-xs font-bold whitespace-nowrap">Store & Gudang</span>
+            <span class="text-xs font-bold whitespace-nowrap">Store & Outlet</span>
         </a>
 
         <a href="<?= BASE_URL ?>pos/master_produk/" title="Data Produk" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/master_produk/', $current_uri) ?>">
@@ -162,10 +162,10 @@ function isDropdownActive($paths, $current_uri) {
             <span class="text-xs font-bold whitespace-nowrap">Item & Harga Dinamis</span>
         </a>
 
-        <a href="<?= BASE_URL ?>pos/transaksi/pembelian/" title="Pembelian & Restock" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/transaksi/pembelian/', $current_uri) ?>">
+        <!-- <a href="<?= BASE_URL ?>pos/transaksi/pembelian/" title="Pembelian & Restock" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/transaksi/pembelian/', $current_uri) ?>">
             <i class="fa-solid fa-boxes-packing w-5 text-center text-base shrink-0"></i> 
             <span class="text-xs font-bold whitespace-nowrap">Pembelian & Restock</span>
-        </a>
+        </a> -->
 
         <?php 
             $paths = ['/pos/mitra/supplier/', '/pos/mitra/pelanggan/']; 

@@ -125,7 +125,7 @@ if ($action === 'get_master_data') {
         FROM products p
         " . ($wh_id > 0 ? "LEFT JOIN product_warehouse_stocks pws ON p.id = pws.product_id AND pws.warehouse_id = $wh_id" : "") . "
         LEFT JOIN warehouses w ON " . ($wh_id > 0 ? "$wh_id = w.id" : "p.warehouse_id = w.id") . "
-        WHERE 1=1 " . ($wh_id > 0 ? "AND (p.warehouse_id = $wh_id OR p.warehouse_id IS NULL OR $wh_id = 1)" : "") . "
+        WHERE 1=1 AND COALESCE(p.is_active, 1) = 1 " . ($wh_id > 0 ? "AND (p.warehouse_id = $wh_id OR p.warehouse_id IS NULL OR $wh_id = 1)" : "") . "
         ORDER BY p.name ASC
     ";
     $products = $pdo->query($prod_sql)->fetchAll(PDO::FETCH_ASSOC);

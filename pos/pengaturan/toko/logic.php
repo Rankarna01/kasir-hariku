@@ -11,6 +11,11 @@ if ($action === 'get_settings') {
         $stmt_store = $pdo->query("SELECT * FROM store_settings_pos WHERE id = 1");
         $store = $stmt_store->fetch(PDO::FETCH_ASSOC);
 
+        if (!$store) {
+            $pdo->exec("INSERT IGNORE INTO store_settings_pos (id, store_name, store_address, store_phone, receipt_footer) VALUES (1, 'Love Cakes', '', '', 'Terima Kasih Atas Kunjungan Anda!')");
+            $store = $pdo->query("SELECT * FROM store_settings_pos WHERE id = 1")->fetch(PDO::FETCH_ASSOC);
+        }
+
         // 2. Tarik Data Konfigurasi Sistem (pos_settings)
         $stmt_sys = $pdo->query("SELECT setting_key, setting_value FROM pos_settings");
         $sys_rows = $stmt_sys->fetchAll(PDO::FETCH_ASSOC);
@@ -37,19 +42,31 @@ if ($action === 'save_settings') {
         $store_phone = $_POST['store_phone'] ?? '';
         $receipt_footer = $_POST['receipt_footer'] ?? '';
 
+        // Pastikan baris id = 1 ada
+        $cek_store = $pdo->query("SELECT id FROM store_settings_pos WHERE id = 1")->fetch();
+        if (!$cek_store) {
+            $pdo->exec("INSERT IGNORE INTO store_settings_pos (id, store_name, store_address, store_phone, receipt_footer) VALUES (1, 'Love Cakes', '', '', 'Terima Kasih Atas Kunjungan Anda!')");
+        }
+
         // Handle Upload Logo (jika ada)
         $logo_query = "";
         $params_store = [$store_name, $store_address, $store_phone, $receipt_footer];
 
         if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
-            $ext = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
-            $new_name = 'logo_toko_' . time() . '.' . $ext;
-            // Pastikan folder assets/img/ sudah ada di root project kamu
-            $upload_path = '../../../assets/img/' . $new_name; 
-            
-            if (move_uploaded_file($_FILES['logo']['tmp_name'], $upload_path)) {
-                $logo_query = ", logo = ?";
-                $params_store[] = $new_name;
+            $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
+            $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+            if (in_array($ext, $allowed)) {
+                $new_name = 'logo_toko_' . time() . '.' . $ext;
+                $uploadDir = __DIR__ . '/../../../assets/img/';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0777, true);
+                }
+                $upload_path = $uploadDir . $new_name; 
+                
+                if (move_uploaded_file($_FILES['logo']['tmp_name'], $upload_path)) {
+                    $logo_query = ", logo = ?";
+                    $params_store[] = $new_name;
+                }
             }
         }
 
@@ -59,12 +76,12 @@ if ($action === 'save_settings') {
 
         // 2. UPDATE KONFIGURASI SISTEM (pos_settings)
         // Kita tangkap array setting dinamis dari frontend
-        $system_settings = json_decode($_POST['system_settings'], true);
+        $system_settings = json_decode($_POST['system_settings'] ?? '{}', true);
         
         if (is_array($system_settings)) {
-            $stmt_update_sys = $pdo->prepare("UPDATE pos_settings SET setting_value = ? WHERE setting_key = ?");
+            $stmt_update_sys = $pdo->prepare("INSERT INTO pos_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
             foreach ($system_settings as $key => $value) {
-                $stmt_update_sys->execute([$value, $key]);
+                $stmt_update_sys->execute([$key, (string)$value]);
             }
         }
 

@@ -112,7 +112,12 @@ document.addEventListener('alpine:init', () => {
                 if (result.status === 'success') {
                     // ✅ UPDATE CACHE LOKAL AGAR MESIN KASIR BACA PIN & MARKUP TERBARU
                     if (window.dbAuth) {
-                        await window.dbAuth.setItem('pos_settings', this.system);
+                        try {
+                            const plainSystem = JSON.parse(JSON.stringify(this.system));
+                            await window.dbAuth.setItem('pos_settings', plainSystem);
+                        } catch (cacheErr) {
+                            console.warn("Gagal update local cache pos_settings:", cacheErr);
+                        }
                     }
 
                     if (typeof Swal !== 'undefined') {
@@ -130,7 +135,7 @@ document.addEventListener('alpine:init', () => {
                 }
             } catch (error) {
                 console.error("Gagal Simpan Pengaturan:", error);
-                if (typeof Swal !== 'undefined') Swal.fire('Error', 'Gagal menyimpan pengaturan ke database.', 'error');
+                if (typeof Swal !== 'undefined') Swal.fire('Error', 'Gagal menyimpan pengaturan ke database: ' + (error.message || error), 'error');
             } finally {
                 this.isSaving = false;
             }

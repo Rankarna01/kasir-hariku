@@ -4,9 +4,7 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVE
 $base_sub = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/pos/') !== false ? trim(explode('/pos/', $_SERVER['SCRIPT_NAME'])[0], '/') : 'kasir-hariku';
 $folder = $is_localhost ? (defined('BASE_URL') ? parse_url(BASE_URL, PHP_URL_PATH) : ($base_sub !== '' ? '/' . $base_sub . '/' : '/')) : '/';
 if (!defined('BASE_URL')) { define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder); }
-$IMG_BASE_URL = $is_localhost 
-    ? "http://localhost/sim-produksi-kue/assets/img/" 
-    : "https://kokowms.my.id/assets/img/";
+$IMG_BASE_URL = defined('BASE_URL') ? BASE_URL . 'assets/img/' : '../../assets/img/';
 $page_title = "Katalog Produk - Love Cakes POS";
 ?>
 <!DOCTYPE html>
