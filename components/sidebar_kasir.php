@@ -172,13 +172,13 @@ function isDropdownActive($paths, $current_uri) {
             $isActive = isDropdownActive($paths, $current_uri);
         ?>
         <div class="mb-1">
-            <button onclick="toggleSubmenu('sub-produk', 'icon-produk')" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all <?= $isActive ? 'bg-[#FFF0F5] text-[#FF3870] font-black ring-1 ring-[#FFC5D8]' : 'text-[#5C2D16]/80 hover:bg-[#FFF0F5] hover:text-[#FF3870] font-semibold' ?>">
+            <!-- <button onclick="toggleSubmenu('sub-produk', 'icon-produk')" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all <?= $isActive ? 'bg-[#FFF0F5] text-[#FF3870] font-black ring-1 ring-[#FFC5D8]' : 'text-[#5C2D16]/80 hover:bg-[#FFF0F5] hover:text-[#FF3870] font-semibold' ?>">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-boxes-stacked w-5 text-center text-base shrink-0"></i>
                     <span class="text-xs whitespace-nowrap">Produk & Inventory</span>
                 </div>
                 <i id="icon-produk" class="fa-solid fa-chevron-<?= $isActive ? 'down' : 'right' ?> text-[10px] transition-transform duration-200"></i>
-            </button>
+            </button> -->
             <div id="sub-produk" class="<?= $isActive ? 'flex' : 'hidden' ?> flex-col gap-1 mt-1 pl-10 pr-2 border-l border-pink-100 ml-3">
                 <a href="<?= BASE_URL ?>pos/produk/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/produk/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Katalog Produk</a>
                 <a href="<?= BASE_URL ?>pos/produk/mutasi/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/produk/mutasi/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Mutasi Antar Store</a>

@@ -44,7 +44,7 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
         
         <header class="bg-primary text-white shadow-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-20 shrink-0">
             <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="md:hidden text-white hover:bg-blue-600 p-2 rounded-lg transition-colors"><i class="fa-solid fa-bars text-xl"></i></button>
+                <button onclick="toggleSidebar()" class="md:hidden text-white hover:bg-rose-600 p-2 rounded-lg transition-colors"><i class="fa-solid fa-bars text-xl"></i></button>
                 <h2 class="text-xl font-black tracking-wide mr-4"><i class="fa-solid fa-cash-register mr-2"></i>Mesin Kasir</h2>
 
                 <div x-show="!needsShiftOpen" class="hidden sm:flex bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-xs font-black items-center gap-2">
@@ -385,7 +385,7 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                                 <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-md px-0.5 py-0.5">
                                     <button @click="updateQty(index, -1)" :disabled="item.is_promo_free" class="w-5 h-5 flex items-center justify-center rounded bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold disabled:opacity-50"><i class="fa-solid fa-minus text-[9px]"></i></button>
                                     <span class="w-5 text-center font-black text-xs" x-text="item.qty"></span>
-                                    <button @click="updateQty(index, 1)" :disabled="item.is_promo_free" class="w-5 h-5 flex items-center justify-center rounded bg-primary text-white hover:bg-blue-600 font-bold disabled:opacity-50"><i class="fa-solid fa-plus text-[9px]"></i></button>
+                                    <button @click="updateQty(index, 1)" :disabled="item.is_promo_free" class="w-5 h-5 flex items-center justify-center rounded bg-primary text-white hover:bg-primary-600 font-bold disabled:opacity-50"><i class="fa-solid fa-plus text-[9px]"></i></button>
                                 </div>
                                 <button @click="removeItem(index)" class="w-6 h-6 flex items-center justify-center text-rose-400 hover:text-rose-600 bg-rose-50 rounded-md shrink-0"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
                             </div>
@@ -462,13 +462,13 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showCheckoutModal = false"></div>
         <div class="bg-white w-full max-w-md rounded-[2rem] shadow-2xl relative z-10 p-6 m-4 flex flex-col overflow-hidden">
             <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
-                <h3 class="font-black text-xl text-slate-800"><i class="fa-solid fa-wallet text-blue-500 mr-2"></i> Proses Pembayaran</h3>
+                <h3 class="font-black text-xl text-slate-800"><i class="fa-solid fa-wallet text-primary mr-2"></i> Proses Pembayaran</h3>
                 <button @click="showCheckoutModal = false" class="text-slate-400 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
-                    <button type="button" @click="setPaymentStatus('lunas')" :class="paymentStatus === 'lunas' ? 'border-blue-500 bg-blue-50 text-blue-700 ring-4 ring-blue-500/10' : 'border-slate-200 hover:bg-slate-50 text-slate-500'" class="p-4 rounded-2xl border-2 transition-all text-center">
-                        <i class="fa-solid fa-check-circle text-3xl mb-2" :class="paymentStatus === 'lunas' ? 'text-blue-500' : 'text-slate-300'"></i>
+                    <button type="button" @click="setPaymentStatus('lunas')" :class="paymentStatus === 'lunas' ? 'border-primary bg-primary-50 text-primary ring-4 ring-primary/10' : 'border-slate-200 hover:bg-slate-50 text-slate-500'" class="p-4 rounded-2xl border-2 transition-all text-center">
+                        <i class="fa-solid fa-check-circle text-3xl mb-2" :class="paymentStatus === 'lunas' ? 'text-primary' : 'text-slate-300'"></i>
                         <div class="font-black text-sm">Bayar Lunas</div>
                     </button>
                     <button type="button" @click="setPaymentStatus('dp')" :class="paymentStatus === 'dp' ? 'border-amber-500 bg-amber-50 text-amber-700 ring-4 ring-amber-500/10' : 'border-slate-200 hover:bg-slate-50 text-slate-500'" class="p-4 rounded-2xl border-2 transition-all text-center">
@@ -480,8 +480,8 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Metode Pembayaran</label>
                     <div class="grid grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-xl max-h-40 overflow-y-auto custom-scrollbar">
                         <template x-for="item in paymentMethods" :key="item.id">
-                            <button type="button" @click="paymentMethod = item.name" :class="paymentMethod === item.name ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="py-2 px-1 rounded-lg font-black text-xs transition-all flex flex-col items-center justify-center gap-1 border border-transparent" :class="paymentMethod === item.name ? 'border-blue-200' : ''">
-                                <i :class="item.type === 'Cash' ? 'fa-solid fa-money-bill-wave text-emerald-500' : (item.type === 'QRIS' ? 'fa-solid fa-qrcode text-blue-500' : (item.type === 'Debit' ? 'fa-solid fa-credit-card text-indigo-500' : 'fa-solid fa-wallet text-slate-500'))"></i>
+                            <button type="button" @click="paymentMethod = item.name" :class="paymentMethod === item.name ? 'bg-white shadow text-slate-800 border-primary ring-2 ring-primary/20' : 'text-slate-500 hover:text-slate-700 border-transparent'" class="py-2 px-1 rounded-lg font-black text-xs transition-all flex flex-col items-center justify-center gap-1 border">
+                                <i :class="item.type === 'Cash' ? 'fa-solid fa-money-bill-wave text-emerald-500' : (item.type === 'QRIS' ? 'fa-solid fa-qrcode text-primary' : (item.type === 'Debit' ? 'fa-solid fa-credit-card text-rose-500' : 'fa-solid fa-wallet text-slate-500'))"></i>
                                 <span x-text="item.name" class="text-[10px]"></span>
                                 <span x-show="item.fee_percent > 0" class="text-[9px] text-rose-500 font-bold" x-text="'+' + item.fee_percent + '%'"></span>
                             </button>
@@ -494,18 +494,18 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                     </div>
                     <div class="flex justify-between items-center mt-1 px-2">
                         <span class="text-xs font-bold text-slate-500">Total Tagihan Akhir:</span>
-                        <span class="font-black text-lg text-rose-500" x-text="'Rp ' + formatRupiah(totalAmount)"></span>
+                        <span class="font-black text-lg text-primary" x-text="'Rp ' + formatRupiah(totalAmount)"></span>
                     </div>
 
                     <div x-show="paymentMethod === 'Cash' && paymentStatus === 'lunas'" x-collapse>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 mt-3">Uang Diterima (Rp)</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400">Rp</span>
-                            <input type="number" id="inputNominalLunas" x-model.number="inputUang" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-3 text-left font-black text-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                            <input type="number" id="inputNominalLunas" x-model.number="inputUang" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-3 text-left font-black text-xl outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                         </div>
                         <div class="flex gap-2 mt-2 overflow-x-auto custom-scrollbar pb-1">
                             <template x-for="sug in cashSuggestions" :key="sug">
-                                <button type="button" @click="inputUang = sug; focusNominal()" class="flex-shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-300 rounded-lg text-xs font-bold transition-colors" x-text="sug === totalAmount ? 'Uang Pas' : formatRupiah(sug)"></button>
+                                <button type="button" @click="inputUang = sug; focusNominal()" class="flex-shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-primary-50 text-slate-600 hover:text-primary border border-slate-200 hover:border-primary/40 rounded-lg text-xs font-bold transition-colors" x-text="sug === totalAmount ? 'Uang Pas' : formatRupiah(sug)"></button>
                             </template>
                         </div>
                         <div class="flex justify-between items-center px-2 mt-3 pt-2 border-t border-slate-100 border-dashed" x-show="inputUang >= totalAmount">
@@ -515,10 +515,10 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                     </div>
 
                     <div x-show="paymentMethod !== 'Cash' && paymentStatus === 'lunas'" x-collapse>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 mt-3">Ref. Pembayaran</label>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 mt-3">Ref. Pembayaran (Opsional)</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400"><i class="fa-solid fa-receipt"></i></span>
-                            <input type="text" x-model="paymentReference" placeholder="Masukkan nomor referensi..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-3 text-left font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                            <input type="text" x-model="paymentReference" placeholder="Nomor referensi / approval (opsional)..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-3 text-left font-bold text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                         </div>
                     </div>
                 </div>
@@ -526,8 +526,8 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Metode Pembayaran</label>
                     <div class="grid grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-xl mb-3 max-h-40 overflow-y-auto custom-scrollbar">
                         <template x-for="item in paymentMethods" :key="item.id">
-                            <button type="button" @click="paymentMethod = item.name" :class="paymentMethod === item.name ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="py-2 px-1 rounded-lg font-black text-xs transition-all flex flex-col items-center justify-center gap-1 border border-transparent" :class="paymentMethod === item.name ? 'border-amber-300' : ''">
-                                <i :class="item.type === 'Cash' ? 'fa-solid fa-money-bill-wave text-emerald-500' : (item.type === 'QRIS' ? 'fa-solid fa-qrcode text-blue-500' : (item.type === 'Debit' ? 'fa-solid fa-credit-card text-indigo-500' : 'fa-solid fa-wallet text-slate-500'))"></i>
+                            <button type="button" @click="paymentMethod = item.name" :class="paymentMethod === item.name ? 'bg-white shadow text-slate-800 border-amber-300 ring-2 ring-amber-300/40' : 'text-slate-500 hover:text-slate-700 border-transparent'" class="py-2 px-1 rounded-lg font-black text-xs transition-all flex flex-col items-center justify-center gap-1 border">
+                                <i :class="item.type === 'Cash' ? 'fa-solid fa-money-bill-wave text-emerald-500' : (item.type === 'QRIS' ? 'fa-solid fa-qrcode text-primary' : (item.type === 'Debit' ? 'fa-solid fa-credit-card text-rose-500' : 'fa-solid fa-wallet text-slate-500'))"></i>
                                 <span x-text="item.name" class="text-[10px]"></span>
                                 <span x-show="item.fee_percent > 0" class="text-[9px] text-rose-500 font-bold" x-text="'+' + item.fee_percent + '%'"></span>
                             </button>
@@ -540,7 +540,7 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                     </div>
                     <div class="flex justify-between items-center mt-1 mb-3 px-2">
                         <span class="text-xs font-bold text-slate-500">Total Tagihan Akhir:</span>
-                        <span class="font-black text-lg text-rose-500" x-text="'Rp ' + formatRupiah(totalAmount)"></span>
+                        <span class="font-black text-lg text-primary" x-text="'Rp ' + formatRupiah(totalAmount)"></span>
                     </div>
 
                     <div>
@@ -563,7 +563,7 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
             </div>
             <div class="mt-6 pt-4 border-t border-slate-100 flex gap-3">
                 <button type="button" @click="showCheckoutModal = false" class="py-3.5 px-6 rounded-xl font-black text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">Batal</button>
-                <button type="button" @click="submitCheckout()" class="flex-1 py-3.5 rounded-xl font-black text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/30 transition-all flex justify-center items-center gap-2">
+                <button type="button" @click="submitCheckout()" class="flex-1 py-3.5 rounded-xl font-black text-white bg-primary hover:bg-primary-600 shadow-md shadow-primary/30 transition-all flex justify-center items-center gap-2 active:scale-[0.98]">
                     <i class="fa-solid fa-check-double"></i> Proses Transaksi
                 </button>
             </div>
@@ -833,31 +833,31 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddCustomerModal = false"></div>
         <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl relative z-10 p-6 m-4 flex flex-col overflow-hidden">
             <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
-                <h3 class="font-black text-xl text-slate-800"><i class="fa-solid fa-user-plus text-blue-500 mr-2"></i> Pelanggan Baru</h3>
+                <h3 class="font-black text-xl text-slate-800"><i class="fa-solid fa-user-plus text-primary mr-2"></i> Pelanggan Baru</h3>
                 <button @click="showAddCustomerModal = false" class="text-slate-400 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <form @submit.prevent="submitNewCustomer()" class="space-y-4">
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap</label>
-                    <input type="text" x-model="newCustomerForm.name" required placeholder="Nama Pelanggan" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 font-bold text-sm text-slate-800">
+                    <input type="text" x-model="newCustomerForm.name" required placeholder="Nama Pelanggan" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-primary font-bold text-sm text-slate-800">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">No. Handphone / WA</label>
-                        <input type="text" x-model="newCustomerForm.phone" placeholder="081234..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 font-bold text-xs text-slate-800">
+                        <input type="text" x-model="newCustomerForm.phone" placeholder="081234..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:border-primary font-bold text-xs text-slate-800">
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">🎂 Tgl Lahir / Ultah</label>
-                        <input type="date" x-model="newCustomerForm.birth_date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 font-bold text-xs text-slate-800">
+                        <input type="date" x-model="newCustomerForm.birth_date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:border-primary font-bold text-xs text-slate-800">
                     </div>
                 </div>
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Alamat (Opsional)</label>
-                    <textarea x-model="newCustomerForm.address" rows="2" placeholder="Alamat Pengiriman..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 font-bold text-xs text-slate-800"></textarea>
+                    <textarea x-model="newCustomerForm.address" rows="2" placeholder="Alamat Pengiriman..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:border-primary font-bold text-xs text-slate-800"></textarea>
                 </div>
                 <div class="pt-2 flex gap-3">
                     <button type="button" @click="showAddCustomerModal = false" class="py-3 px-5 rounded-xl font-black text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">Batal</button>
-                    <button type="submit" :disabled="isSavingCustomer" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-xl shadow-md shadow-blue-500/30 transition-all flex justify-center items-center gap-2 disabled:opacity-50">
+                    <button type="submit" :disabled="isSavingCustomer" class="flex-1 bg-primary hover:bg-primary-600 text-white font-black py-3 rounded-xl shadow-md shadow-primary/30 transition-all flex justify-center items-center gap-2 disabled:opacity-50">
                         <i class="fa-solid fa-save" :class="isSavingCustomer ? 'fa-spin' : ''"></i> Simpan
                     </button>
                 </div>
@@ -878,13 +878,13 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                 <div class="flex justify-between font-bold text-slate-600" x-show="paymentStatusSaved === 'dp'"><span>Telah Dibayar (DP)</span> <span class="text-amber-600 font-black text-lg" x-text="'Rp ' + formatRupiah(dpAmountSaved)"></span></div>
                 <div class="flex justify-between font-bold text-rose-600 border-t border-slate-200 border-dashed pt-3" x-show="paymentStatusSaved === 'dp'"><span>Sisa Tagihan (Utang)</span> <span x-text="'Rp ' + formatRupiah(totalAmountSaved - dpAmountSaved)"></span></div>
                 
-                <div class="flex justify-between font-bold text-slate-600 text-base border-t border-slate-200 border-dashed pt-3"><span>Uang Diterima</span> <span class="text-blue-600 font-black" x-text="'Rp ' + formatRupiah(amountPaidSaved)"></span></div>
+                <div class="flex justify-between font-bold text-slate-600 text-base border-t border-slate-200 border-dashed pt-3"><span>Uang Diterima</span> <span class="text-primary font-black" x-text="'Rp ' + formatRupiah(amountPaidSaved)"></span></div>
                 <div class="flex justify-between font-black text-emerald-600 text-xl pt-2"><span>Kembalian</span> <span x-text="'Rp ' + formatRupiah(changeAmountSaved)"></span></div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mt-6">
                 <button @click="resetCart()" class="py-3 rounded-xl font-black text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">Order Baru</button>
-                <button @click="printReceipt()" class="py-3 rounded-xl font-black text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-print"></i> Cetak Struk</button>
+                <button @click="printReceipt()" class="py-3 rounded-xl font-black text-white bg-primary hover:bg-primary-600 shadow-md shadow-primary/20 transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-print"></i> Cetak Struk</button>
             </div>
         </div>
     </div>

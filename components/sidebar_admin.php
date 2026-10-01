@@ -207,10 +207,10 @@ function isDropdownActive($paths, $current_uri) {
             <span class="w-1.5 h-1.5 rounded-full bg-[#EC4899]"></span> Keuangan & Sales
         </div>
 
-        <a href="<?= BASE_URL ?>pos/transaksi/arus_kas/" title="Pengeluaran Kas (Petty Cash)" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/transaksi/arus_kas/', $current_uri) ?>">
+        <!-- <a href="<?= BASE_URL ?>pos/transaksi/arus_kas/" title="Pengeluaran Kas (Petty Cash)" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/transaksi/arus_kas/', $current_uri) ?>">
             <i class="fa-solid fa-hand-holding-dollar w-5 text-center text-base shrink-0"></i> 
             <span class="text-xs font-bold whitespace-nowrap">Kas Keluar (Petty Cash)</span>
-        </a>
+        </a> -->
 
         <?php 
             $paths_shift = ['/pos/laporan/penjualan_shift/ringkasan_omset/', '/pos/laporan/penjualan_shift/analisis_produk/', '/pos/laporan/penjualan_shift/riwayat_transaksi/', '/pos/laporan/penjualan_shift/evaluasi_kasir/', '/pos/laporan/karyawan/'];
