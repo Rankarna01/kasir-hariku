@@ -1,10 +1,6 @@
 <?php
-$is_localhost = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$folder = $is_localhost ? '/pos-lovecakes/' : '/';
-
-if (!defined('BASE_URL')) { 
-    define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder); 
+if (!defined('BASE_URL')) {
+    require_once __DIR__ . '/../config/env.php';
 }
 ?>
 <meta charset="UTF-8">

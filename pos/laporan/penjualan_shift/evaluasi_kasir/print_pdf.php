@@ -4,17 +4,28 @@ require_once '../../../../config/database.php';
 
 $start_date = $_GET['start_date'] ?? date('Y-m-d');
 $end_date = $_GET['end_date'] ?? date('Y-m-d');
+$wh_id = !empty($_SESSION['pos_warehouse_id']) ? intval($_SESSION['pos_warehouse_id']) : 0;
+
+$wh_filter = "";
+$params = [$start_date, $end_date];
+if ($wh_id > 0) {
+    $wh_filter = " AND (sh.warehouse_id = ? OR (sh.warehouse_id IS NULL AND ? = 1)) ";
+    $params[] = $wh_id;
+    $params[] = $wh_id;
+}
 
 // QUERY LAPORAN SHIFT (Logic Hitung Uang Fisik Laci)
 $stmt_shift = $pdo->prepare("
     SELECT 
-        sh.id, COALESCE(u.name, 'Admin') as kasir_name, ms.shift_name, 
+        sh.id, COALESCE(u.name, 'Kasir') as kasir_name, COALESCE(ms.shift_name, 'Reguler') as shift_name, 
         sh.start_time, sh.end_time, sh.start_cash, sh.end_cash, sh.status,
         
         (SELECT COALESCE(SUM(sp.amount), 0) FROM sale_payments_pos sp
          LEFT JOIN payment_methods pm ON sp.payment_method = pm.name
+         LEFT JOIN sales_pos s ON sp.sale_id = s.id
          WHERE (pm.type = 'Cash' OR sp.payment_method = 'cash' OR sp.payment_method = 'Cash') 
-         AND sp.created_at >= sh.start_time AND sp.created_at <= COALESCE(sh.end_time, NOW())) as total_cash_in,
+         AND sp.created_at >= sh.start_time AND sp.created_at <= COALESCE(sh.end_time, NOW())
+         AND (sh.warehouse_id IS NULL OR s.warehouse_id IS NULL OR s.warehouse_id = sh.warehouse_id)) as total_cash_in,
          
         (SELECT COALESCE(SUM(nominal), 0) FROM petty_cash_pos 
          WHERE shift_history_id = sh.id AND jenis = 'keluar') as total_kas_keluar
@@ -22,10 +33,10 @@ $stmt_shift = $pdo->prepare("
     FROM shifts_history_pos sh
     LEFT JOIN users_pos u ON sh.user_id = u.id
     LEFT JOIN master_shifts_pos ms ON sh.shift_id = ms.id
-    WHERE DATE(sh.start_time) BETWEEN ? AND ?
+    WHERE DATE(sh.start_time) BETWEEN ? AND ? $wh_filter
     ORDER BY sh.start_time DESC
 ");
-$stmt_shift->execute([$start_date, $end_date]);
+$stmt_shift->execute($params);
 $shifts = $stmt_shift->fetchAll(PDO::FETCH_ASSOC);
 
 function formatRp($angka) { return number_format((float)$angka, 0, ',', '.'); }

@@ -185,19 +185,52 @@ if (isset($_SESSION['pos_user_id'])) {
             </div>
 
             <!-- Header -->
-            <div class="mb-8 fade-in-up">
-                <p class="text-blue-600 text-sm font-bold uppercase tracking-widest mb-1">Selamat Datang Kembali 👋</p>
-                <h2 class="text-3xl font-black text-slate-800 leading-tight">Masuk ke Akun Anda</h2>
-                <p class="text-slate-500 text-sm mt-2 font-medium">Masukkan kredensial untuk melanjutkan ke sistem</p>
+            <div class="mb-6 fade-in-up">
+                <p class="text-blue-600 text-xs font-black uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                    Portal Autentikasi Love Cakes
+                </p>
+                <h2 class="text-3xl font-black text-slate-800 leading-tight">Masuk ke Sistem</h2>
+                <p class="text-slate-500 text-sm mt-1 font-medium">Pilih peran akses Anda dan masukkan kredensial akun.</p>
+            </div>
+
+            <!-- ===== ROLE SELECTOR TABS (ADMIN vs PEGAWAI) ===== -->
+            <div class="mb-6 p-1.5 bg-slate-200/80 rounded-2xl flex items-center gap-1.5 border border-slate-200 shadow-inner fade-in-up">
+                <button type="button" @click="setLoginRole('admin')" 
+                    :class="loginRole === 'admin' ? 'bg-white text-blue-600 shadow-md font-black ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-800 font-bold'"
+                    class="flex-1 py-3 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all duration-200">
+                    <i class="fa-solid fa-shield-halved text-sm" :class="loginRole === 'admin' ? 'text-blue-600' : 'text-slate-400'"></i>
+                    <span>Administrator</span>
+                </button>
+                <button type="button" @click="setLoginRole('pegawai')" 
+                    :class="loginRole === 'pegawai' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-black' : 'text-slate-500 hover:text-slate-800 font-bold'"
+                    class="flex-1 py-3 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all duration-200">
+                    <i class="fa-solid fa-cash-register text-sm" :class="loginRole === 'pegawai' ? 'text-white' : 'text-slate-400'"></i>
+                    <span>Pegawai (Kasir)</span>
+                </button>
+            </div>
+
+            <!-- Role Badge / Hint -->
+            <div class="mb-5 p-3 rounded-2xl flex items-center gap-3 transition-colors fade-in-up"
+                 :class="loginRole === 'admin' ? 'bg-blue-50/70 border border-blue-100 text-blue-900' : 'bg-amber-50/70 border border-amber-100 text-amber-900'">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm shrink-0"
+                     :class="loginRole === 'admin' ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30' : 'bg-amber-500 text-white shadow-sm shadow-amber-500/30'">
+                    <i :class="loginRole === 'admin' ? 'fa-solid fa-user-gear' : 'fa-solid fa-user-tag'"></i>
+                </div>
+                <div class="text-xs">
+                    <span class="font-black block" x-text="loginRole === 'admin' ? 'Login Administrator' : 'Login Pegawai Toko'"></span>
+                    <span class="text-[11px] opacity-80" x-text="loginRole === 'admin' ? 'Akses dasbor backoffice, laporan global, dan pengaturan toko.' : 'Buka sesi kasir dan pilih shift operasional kerja hari ini.'"></span>
+                </div>
             </div>
 
             <!-- ===== FORM LOGIN ===== -->
-            <form @submit.prevent="doLogin" class="space-y-5">
+            <form @submit.prevent="doLogin" class="space-y-4">
 
                 <!-- Username -->
                 <div class="fade-in-up delay-1">
-                    <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
-                        <i class="fa-solid fa-user mr-1 text-blue-500"></i> Username
+                    <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">
+                        <i class="fa-solid fa-user mr-1 text-blue-500"></i>
+                        <span x-text="loginRole === 'admin' ? 'Username Admin' : 'Username Pegawai / Kasir'"></span>
                     </label>
                     <div class="relative">
                         <input
@@ -205,15 +238,15 @@ if (isset($_SESSION['pos_user_id'])) {
                             x-model="username"
                             required
                             autocomplete="username"
-                            placeholder="Masukkan username Anda..."
-                            class="input-field w-full pl-4 pr-4 py-4 border-2 border-slate-200 rounded-2xl outline-none bg-white font-semibold text-slate-700 placeholder-slate-300 text-sm"
+                            :placeholder="loginRole === 'admin' ? 'Masukkan username admin...' : 'Masukkan username pegawai (contoh: pegawai / kasir1)...'"
+                            class="input-field w-full pl-4 pr-4 py-3.5 border-2 border-slate-200 rounded-2xl outline-none bg-white font-semibold text-slate-700 placeholder-slate-300 text-sm"
                         >
                     </div>
                 </div>
 
                 <!-- Password -->
                 <div class="fade-in-up delay-2">
-                    <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                    <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">
                         <i class="fa-solid fa-lock mr-1 text-blue-500"></i> Password
                     </label>
                     <div class="relative">
@@ -222,8 +255,8 @@ if (isset($_SESSION['pos_user_id'])) {
                             x-model="password"
                             required
                             autocomplete="current-password"
-                            placeholder="Masukkan password Anda..."
-                            class="input-field w-full pl-4 pr-12 py-4 border-2 border-slate-200 rounded-2xl outline-none bg-white font-semibold text-slate-700 placeholder-slate-300 text-sm"
+                            placeholder="Masukkan password akun Anda..."
+                            class="input-field w-full pl-4 pr-12 py-3.5 border-2 border-slate-200 rounded-2xl outline-none bg-white font-semibold text-slate-700 placeholder-slate-300 text-sm"
                         >
                         <button type="button" @click="showPass = !showPass"
                             class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors">
@@ -241,20 +274,122 @@ if (isset($_SESSION['pos_user_id'])) {
                     >
                         <template x-if="!isLoading">
                             <span class="flex items-center gap-2">
-                                <i class="fa-solid fa-right-to-bracket"></i>
-                                Masuk Sekarang
+                                <i :class="loginRole === 'admin' ? 'fa-solid fa-right-to-bracket' : 'fa-solid fa-cash-register'"></i>
+                                <span x-text="loginRole === 'admin' ? 'Masuk ke Administrator' : 'Lanjut Buka Sesi Kasir'"></span>
                             </span>
                         </template>
                         <template x-if="isLoading">
                             <span class="flex items-center gap-2">
                                 <i class="fa-solid fa-circle-notch fa-spin"></i>
-                                Memverifikasi...
+                                Memverifikasi Akun...
                             </span>
                         </template>
                     </button>
                 </div>
 
             </form>
+
+            <!-- ===== POP-UP MODAL PEMILIHAN SHIFT DINAMIS (PEGAWAI) ===== -->
+            <div x-show="showShiftModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95">
+                <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 overflow-hidden relative" @click.away="showShiftModal = false">
+                    <!-- Modal Header -->
+                    <div class="p-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white relative">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl shadow-inner">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] font-black uppercase tracking-widest text-blue-200">Sesi Kasir Baru</div>
+                                    <h3 class="text-xl font-black">Pilih Shift Kerja</h3>
+                                </div>
+                            </div>
+                            <button type="button" @click="showShiftModal = false" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-blue-100 mt-2 font-medium">
+                            Halo <span class="font-bold text-white" x-text="loggedInUser?.name || 'Pegawai'"></span>! Silakan tentukan shift bertugas hari ini dari master data toko.
+                        </p>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="p-6 space-y-5 max-h-[65vh] overflow-y-auto">
+                        <!-- Shift Cards -->
+                        <div>
+                            <label class="block text-xs font-black text-slate-600 uppercase tracking-wider mb-2.5">
+                                <i class="fa-solid fa-calendar-check mr-1 text-blue-600"></i> Daftar Shift Aktif
+                            </label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                <template x-for="s in masterShifts" :key="s.id">
+                                    <div @click="selectedShiftId = s.id"
+                                        :class="selectedShiftId == s.id ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-500/20 shadow-md' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'"
+                                        class="cursor-pointer p-4 rounded-2xl border-2 transition-all relative flex flex-col justify-between">
+                                        <div class="flex items-start justify-between mb-2">
+                                            <div>
+                                                <span class="font-black text-sm text-slate-800 block" x-text="s.shift_name"></span>
+                                                <span class="text-xs font-semibold text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                                    <i class="fa-regular fa-clock text-blue-500 text-[11px]"></i>
+                                                    <span x-text="(s.start_time || '').substring(0,5) + ' - ' + (s.end_time || '').substring(0,5)"></span>
+                                                </span>
+                                            </div>
+                                            <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                                                :class="selectedShiftId == s.id ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white'">
+                                                <i x-show="selectedShiftId == s.id" class="fa-solid fa-check text-[10px]"></i>
+                                            </div>
+                                        </div>
+                                        <template x-if="s.is_current">
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 w-fit mt-1">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                Shift Jam Sekarang
+                                            </span>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Modal Awal Kas -->
+                        <div>
+                            <label class="block text-xs font-black text-slate-600 uppercase tracking-wider mb-2">
+                                <i class="fa-solid fa-money-bill-wave mr-1 text-emerald-600"></i> Modal Awal di Laci Kas (Cash)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-sm">Rp</span>
+                                <input type="text"
+                                    :value="startCashFormatted"
+                                    @input="updateCashInput($event.target.value)"
+                                    class="w-full pl-12 pr-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-2xl outline-none focus:border-blue-600 focus:bg-white font-black text-slate-800 text-base"
+                                    placeholder="0">
+                            </div>
+                            <!-- Quick chips -->
+                            <div class="flex flex-wrap gap-1.5 mt-2">
+                                <button type="button" @click="setCashQuick(0)" class="text-[11px] font-bold px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 0</button>
+                                <button type="button" @click="setCashQuick(100000)" class="text-[11px] font-bold px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 100.000</button>
+                                <button type="button" @click="setCashQuick(200000)" class="text-[11px] font-bold px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 200.000</button>
+                                <button type="button" @click="setCashQuick(500000)" class="text-[11px] font-bold px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 500.000</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="p-5 bg-slate-50 border-t border-slate-100 flex items-center gap-3">
+                        <button type="button" @click="showShiftModal = false" class="flex-1 py-3 px-4 rounded-2xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 font-bold text-sm transition-all">
+                            Batal
+                        </button>
+                        <button type="button" @click="confirmShift()" :disabled="isLoadingShift || !selectedShiftId" class="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fa-solid fa-lock-open" :class="isLoadingShift ? 'fa-spin' : ''"></i>
+                            <span>Buka Shift & Masuk</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Footer info -->
             <div class="fade-in-up delay-4 mt-8 pt-6 border-t border-slate-200">

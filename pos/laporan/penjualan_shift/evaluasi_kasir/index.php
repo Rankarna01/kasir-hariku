@@ -2,7 +2,8 @@
 require_once '../../../../config/auth.php';
 $is_localhost = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$folder = $is_localhost ? '/pos-lovecakes/' : '/';
+$base_sub = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/pos/') !== false ? trim(explode('/pos/', $_SERVER['SCRIPT_NAME'])[0], '/') : 'kasir-hariku';
+$folder = $is_localhost ? ($base_sub !== '' ? '/' . $base_sub . '/' : '/') : '/';
 if (!defined('BASE_URL')) { define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder); }
 $page_title = "Evaluasi Kasir - Love Cakes POS";
 ?>
@@ -42,7 +43,7 @@ $page_title = "Evaluasi Kasir - Love Cakes POS";
                     <input type="date" x-model="startDate" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20">
                     <span class="py-2 text-slate-400 font-bold text-xs">s/d</span>
                     <input type="date" x-model="endDate" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20">
-                    <button @click="fetchReport()" :disabled="isLoading" class="bg-primary hover:bg-slate-200 text-primary px-6 py-2.5 rounded-xl font-black transition-all flex items-center gap-2 shadow-sm disabled:opacity-50">
+                    <button @click="fetchReport()" :disabled="isLoading" class="bg-primary hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-black transition-all flex items-center gap-2 shadow-sm disabled:opacity-50">
                         <i class="fa-solid fa-magnifying-glass"></i> Tampilkan
                     </button>
                     
@@ -81,7 +82,7 @@ $page_title = "Evaluasi Kasir - Love Cakes POS";
                                     <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                                         <td class="p-3">
                                             <div class="font-black text-slate-800 text-xs" x-text="shift.kasir_name"></div>
-                                            <div class="text-[10px] font-bold text-slate-400" x-text="shift.shift_name + ' (' + shift.start_time.split(' ')[1] + ')'"></div>
+                                            <div class="text-[10px] font-bold text-slate-400" x-text="(shift.shift_name || 'Reguler') + ' (' + (shift.start_time ? shift.start_time.split(' ')[1] : '-') + ')'"></div>
                                             <div x-show="shift.status === 'open'" class="text-[9px] font-black text-blue-500 uppercase mt-1 animate-pulse">Berjalan...</div>
                                         </td>
                                         <td class="p-3 text-center font-bold text-slate-600" x-text="formatRupiah(shift.start_cash)"></td>

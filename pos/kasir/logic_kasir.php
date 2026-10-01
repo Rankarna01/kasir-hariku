@@ -13,29 +13,91 @@ $user_id = $_SESSION['pos_user_id'] ?? 1;
 
 // --- FUNGSI SHIFT KASIR ---
 if ($action === 'check_shift') {
-    $stmt = $pdo->prepare("SELECT id FROM shifts_history_pos WHERE user_id = ? AND status = 'open' LIMIT 1");
+    $stmt = $pdo->prepare("
+        SELECT sh.id, sh.shift_id, ms.shift_name, ms.start_time, ms.end_time 
+        FROM shifts_history_pos sh 
+        LEFT JOIN master_shifts_pos ms ON sh.shift_id = ms.id 
+        WHERE sh.user_id = ? AND sh.status = 'open' 
+        ORDER BY sh.id DESC LIMIT 1
+    ");
     $stmt->execute([$user_id]);
     $shift = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Ambil master shift aktif
+    $stmt_m = $pdo->query("SELECT id, shift_name, start_time, end_time FROM master_shifts_pos WHERE is_active = 1 ORDER BY start_time ASC");
+    $master_shifts = $stmt_m->fetchAll(PDO::FETCH_ASSOC);
+    $currentTime = date('H:i:s');
+    foreach ($master_shifts as &$ms) {
+        if ($ms['start_time'] <= $ms['end_time']) {
+            $ms['is_current'] = ($currentTime >= $ms['start_time'] && $currentTime <= $ms['end_time']);
+        } else {
+            $ms['is_current'] = ($currentTime >= $ms['start_time'] || $currentTime <= $ms['end_time']);
+        }
+    }
+    unset($ms);
+
+    // Ambil default start cash
+    $stmt_set = $pdo->prepare("SELECT setting_value FROM pos_settings WHERE setting_key = 'default_start_cash'");
+    $stmt_set->execute();
+    $setting = $stmt_set->fetch(PDO::FETCH_ASSOC);
+    $default_cash = $setting ? (float)$setting['setting_value'] : 0;
+
+    if ($shift) {
+        $_SESSION['pos_active_shift_id'] = $shift['shift_id'];
+        $_SESSION['pos_active_shift_name'] = $shift['shift_name'] ?? 'Shift Aktif';
+        $_SESSION['pos_shift_history_id'] = $shift['id'];
+    }
+
     echo json_encode([
         'status' => 'success', 
         'has_open_shift' => !!$shift, 
-        'shift_id_active' => $shift ? $shift['id'] : null
+        'shift_id_active' => $shift ? $shift['id'] : null,
+        'shift_name_active' => $shift ? ($shift['shift_name'] ?? 'Shift Aktif') : null,
+        'master_shifts' => $master_shifts,
+        'default_start_cash' => $default_cash
     ]);
     exit;
 }
 
 if ($action === 'open_shift') {
-    // Ambil default_start_cash dari pos_settings
     $stmt_set = $pdo->prepare("SELECT setting_value FROM pos_settings WHERE setting_key = 'default_start_cash'");
     $stmt_set->execute();
     $setting = $stmt_set->fetch(PDO::FETCH_ASSOC);
-    $start_cash = $setting ? (float)$setting['setting_value'] : 0;
+    $start_cash = isset($_POST['start_cash']) ? floatval($_POST['start_cash']) : ($setting ? (float)$setting['setting_value'] : 0);
     $warehouse_id = !empty($_SESSION['pos_warehouse_id']) ? intval($_SESSION['pos_warehouse_id']) : 1;
 
-    // Gunakan shift_id 0 karena sudah tidak relasi ke master shift
-    $stmt = $pdo->prepare("INSERT INTO shifts_history_pos (user_id, shift_id, start_time, start_cash, status, warehouse_id) VALUES (?, 0, NOW(), ?, 'open', ?)");
-    $stmt->execute([$user_id, $start_cash, $warehouse_id]);
-    echo json_encode(['status' => 'success', 'message' => 'Shift berhasil dibuka!']);
+    $shift_id = intval($_POST['shift_id'] ?? 0);
+    if ($shift_id <= 0) {
+        $curTime = date('H:i:s');
+        $stmtMatch = $pdo->prepare("SELECT id FROM master_shifts_pos WHERE is_active = 1 AND ? BETWEEN start_time AND end_time LIMIT 1");
+        $stmtMatch->execute([$curTime]);
+        $matched = $stmtMatch->fetch(PDO::FETCH_ASSOC);
+        if ($matched) {
+            $shift_id = intval($matched['id']);
+        } else {
+            $stmtFirst = $pdo->query("SELECT id FROM master_shifts_pos WHERE is_active = 1 ORDER BY start_time ASC LIMIT 1");
+            $shift_id = intval($stmtFirst->fetchColumn() ?: 0);
+        }
+    }
+
+    $stmtShiftName = $pdo->prepare("SELECT shift_name FROM master_shifts_pos WHERE id = ?");
+    $stmtShiftName->execute([$shift_id]);
+    $shiftName = $stmtShiftName->fetchColumn() ?: 'Shift Kasir';
+
+    $stmt = $pdo->prepare("INSERT INTO shifts_history_pos (user_id, shift_id, start_time, start_cash, status, warehouse_id) VALUES (?, ?, NOW(), ?, 'open', ?)");
+    $stmt->execute([$user_id, $shift_id, $start_cash, $warehouse_id]);
+    $history_id = $pdo->lastInsertId();
+
+    $_SESSION['pos_active_shift_id'] = $shift_id;
+    $_SESSION['pos_active_shift_name'] = $shiftName;
+    $_SESSION['pos_shift_history_id'] = $history_id;
+
+    echo json_encode([
+        'status' => 'success', 
+        'message' => 'Shift ' . $shiftName . ' berhasil dibuka!', 
+        'shift_id' => $shift_id,
+        'shift_name' => $shiftName
+    ]);
     exit;
 }
 
@@ -119,6 +181,11 @@ if ($action === 'get_master_data') {
         $food_delivery_prices = $pdo->query("SELECT * FROM food_delivery_prices_pos WHERE is_active = 1")->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {}
 
+    $master_shifts = [];
+    try {
+        $master_shifts = $pdo->query("SELECT id, shift_name, start_time, end_time FROM master_shifts_pos WHERE is_active = 1 ORDER BY start_time ASC")->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {}
+
     echo json_encode([
         'status' => 'success',
         'products' => $products,
@@ -132,7 +199,8 @@ if ($action === 'get_master_data') {
         'food_delivery_prices' => $food_delivery_prices,
         'default_start_cash' => $default_start_cash,
         'settings' => $settings,
-        'valid_supervisor_pins' => $valid_pins
+        'valid_supervisor_pins' => $valid_pins,
+        'master_shifts' => $master_shifts
     ]);
     exit;
 }
@@ -300,6 +368,10 @@ if ($action === 'checkout') {
         if ($checkCol2->rowCount() === 0) {
             $pdo->exec("ALTER TABLE sales_pos ADD COLUMN discount_auto DECIMAL(15,2) DEFAULT 0.00 AFTER discount_manual");
         }
+        $checkCol3 = $pdo->query("SHOW COLUMNS FROM sales_pos LIKE 'user_id'");
+        if ($checkCol3->rowCount() === 0) {
+            $pdo->exec("ALTER TABLE sales_pos ADD COLUMN user_id INT NULL AFTER warehouse_id");
+        }
     } catch (Exception $e) {}
 
     $data = json_decode(file_get_contents('php://input'), true);
@@ -319,11 +391,11 @@ if ($action === 'checkout') {
     $discount_auto = !empty($data['discount_auto']) ? $data['discount_auto'] : 0.00;
     $warehouse_id = !empty($_SESSION['pos_warehouse_id']) ? intval($_SESSION['pos_warehouse_id']) : 1;
 
-    $stmt = $pdo->prepare("INSERT INTO sales_pos (invoice_no, customer_id, order_type, subtotal, discount_voucher, voucher_code, discount_points, discount_manual, discount_auto, points_used, points_earned, total_amount, payment_method, payment_fee_name, payment_fee_amount, payment_reference, payment_status, dp_amount, amount_paid, change_amount, is_po, channel, pickup_date, pickup_time, notes, warehouse_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO sales_pos (invoice_no, customer_id, order_type, subtotal, discount_voucher, voucher_code, discount_points, discount_manual, discount_auto, points_used, points_earned, total_amount, payment_method, payment_fee_name, payment_fee_amount, payment_reference, payment_status, dp_amount, amount_paid, change_amount, is_po, channel, pickup_date, pickup_time, notes, warehouse_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([
         $invoice_no, $customer_id, 'offline', $data['subtotal'], $data['discount_voucher'], $data['voucher_code'], 
         $data['discount_points'], $data['discount_manual'], $discount_auto, $data['points_used'], $data['points_earned'], 
-        $data['total_amount'], $data['payment_method'], $payment_fee_name, $payment_fee_amount, $payment_reference, $data['payment_status'], $data['dp_amount'], $data['amount_paid'], $data['change_amount'], $is_po, $channel, $pickup_date, $pickup_time, $notes, $warehouse_id
+        $data['total_amount'], $data['payment_method'], $payment_fee_name, $payment_fee_amount, $payment_reference, $data['payment_status'], $data['dp_amount'], $data['amount_paid'], $data['change_amount'], $is_po, $channel, $pickup_date, $pickup_time, $notes, $warehouse_id, $user_id
     ]);
     $sale_id = $pdo->lastInsertId();
 

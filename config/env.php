@@ -70,9 +70,11 @@ if (!defined('BASE_URL')) {
             } elseif (str_starts_with($normalized_app_root . '/', $document_prefix)) {
                 $relative_path = substr($normalized_app_root, strlen($normalized_document_root));
                 $folder = '/' . trim($relative_path, '/') . '/';
+            } else {
+                $folder = '/' . trim(basename($normalized_app_root), '/') . '/';
             }
         } elseif ($is_local_request) {
-            $folder = '/pos-lovecakes/';
+            $folder = '/' . trim(basename(dirname(__DIR__)), '/') . '/';
         }
 
         define('BASE_URL', $protocol . $host . $folder);

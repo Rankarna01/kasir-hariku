@@ -2,13 +2,14 @@
 require_once '../../../config/auth.php';
 $is_localhost = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$folder_pos = $is_localhost ? '/pos-lovecakes/' : '/';
+$base_sub = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/pos/') !== false ? trim(explode('/pos/', $_SERVER['SCRIPT_NAME'])[0], '/') : 'kasir-hariku';
+$folder_pos = $is_localhost ? ($base_sub !== '' ? '/' . $base_sub . '/' : '/') : '/';
 if (!defined('BASE_URL')) { define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder_pos); }
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <?php include '../../../components/head.php'; ?>
+    <?php include '../../../components/header.php'; ?>
     <script>const BASE_URL = "<?= BASE_URL ?>";</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">

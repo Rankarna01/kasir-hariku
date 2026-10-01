@@ -146,8 +146,23 @@ function isDropdownActive($paths, $current_uri) {
                 <a href="<?= BASE_URL ?>pos/mitra/supplier/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/mitra/supplier/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Data Supplier</a>
                 <a href="<?= BASE_URL ?>pos/mitra/pelanggan/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/mitra/pelanggan/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Data Pelanggan</a>
             </div>
+        <?php 
+            $paths_shift_karyawan = ['/pos/pengaturan/shift/', '/pos/karyawan/shift/']; 
+            $isActiveShiftKaryawan = isDropdownActive($paths_shift_karyawan, $current_uri);
+        ?>
+        <div class="mb-1">
+            <button onclick="toggleSubmenu('sub-shift-karyawan', 'icon-shift-karyawan')" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-all <?= $isActiveShiftKaryawan ? 'bg-blue-50 text-blue-600 font-bold shadow-sm ring-1 ring-blue-100/50' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600 font-medium' ?>">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-user-clock w-5 text-center text-lg shrink-0"></i> 
+                    <span class="text-sm whitespace-nowrap">Shift & Karyawan</span>
+                </div>
+                <i id="icon-shift-karyawan" class="fa-solid fa-chevron-<?= $isActiveShiftKaryawan ? 'down' : 'right' ?> text-[10px] transition-transform duration-200"></i>
+            </button>
+            <div id="sub-shift-karyawan" class="<?= $isActiveShiftKaryawan ? 'flex' : 'hidden' ?> flex-col gap-1 mt-1 pl-11 pr-2">
+                <a href="<?= BASE_URL ?>pos/pengaturan/shift/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/pengaturan/shift/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Manajemen Shift Panel</a>
+                <a href="<?= BASE_URL ?>pos/karyawan/shift/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/karyawan/shift/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Jadwal Shift Karyawan</a>
+            </div>
         </div>
-
 
         <div class="px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-6 mb-2">Keuangan & Sales</div>
 
@@ -158,7 +173,7 @@ function isDropdownActive($paths, $current_uri) {
 
         <?php 
             // MENU BARU: LAPORAN PENJUALAN & SHIFT
-            $paths_shift = ['/pos/laporan/penjualan_shift/ringkasan_omset/', '/pos/laporan/penjualan_shift/analisis_produk/', '/pos/laporan/penjualan_shift/riwayat_transaksi/', '/pos/laporan/penjualan_shift/evaluasi_kasir/'];
+            $paths_shift = ['/pos/laporan/penjualan_shift/ringkasan_omset/', '/pos/laporan/penjualan_shift/analisis_produk/', '/pos/laporan/penjualan_shift/riwayat_transaksi/', '/pos/laporan/penjualan_shift/evaluasi_kasir/', '/pos/laporan/karyawan/'];
             $isActiveShift = isDropdownActive($paths_shift, $current_uri);
         ?>
         <div class="mb-1">
@@ -174,11 +189,12 @@ function isDropdownActive($paths, $current_uri) {
                 <a href="<?= BASE_URL ?>pos/laporan/penjualan_shift/analisis_produk/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/penjualan_shift/analisis_produk/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Analisis Produk</a>
                 <a href="<?= BASE_URL ?>pos/laporan/penjualan_shift/riwayat_transaksi/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/penjualan_shift/riwayat_transaksi/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Riwayat Transaksi</a>
                 <a href="<?= BASE_URL ?>pos/laporan/penjualan_shift/evaluasi_kasir/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/penjualan_shift/evaluasi_kasir/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Evaluasi Kasir</a>
+                <a href="<?= BASE_URL ?>pos/laporan/karyawan/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/karyawan/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Laporan Karyawan</a>
             </div>
         </div>
 
         <?php 
-            $paths = ['/pos/laporan/ringkasan/', '/pos/laporan/produk_kategori/', '/pos/laporan/pelanggan/', '/pos/laporan/pencairan/', '/pos/laporan/akuntansi/', '/pos/laporan/pihak_ketiga/', '/pos/laporan/penjualan/', '/pos/laporan/opname/', '/pos/transaksi/pembayaran_digital/']; 
+            $paths = ['/pos/laporan/ringkasan/', '/pos/laporan/produk_kategori/', '/pos/laporan/pelanggan/', '/pos/laporan/pencairan/', '/pos/laporan/akuntansi/', '/pos/laporan/pihak_ketiga/', '/pos/laporan/penjualan/', '/pos/laporan/opname/', '/pos/transaksi/pembayaran_digital/', '/pos/laporan/karyawan/']; 
             $isActive = isDropdownActive($paths, $current_uri);
         ?>
         <div class="mb-1">
@@ -193,6 +209,7 @@ function isDropdownActive($paths, $current_uri) {
                 <a href="<?= BASE_URL ?>pos/laporan/ringkasan/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/ringkasan/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Ringkasan & Jam Ramai</a>
                 <a href="<?= BASE_URL ?>pos/laporan/produk_kategori/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/produk_kategori/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Analisa Produk Laku</a>
                 <a href="<?= BASE_URL ?>pos/laporan/pelanggan/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/pelanggan/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Riwayat Pelanggan</a>
+                <a href="<?= BASE_URL ?>pos/laporan/karyawan/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/karyawan/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Kinerja Karyawan</a>
                 <a href="<?= BASE_URL ?>pos/laporan/penjualan/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/penjualan/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Penjualan</a>
                 <a href="<?= BASE_URL ?>pos/laporan/opname/" class="flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/opname/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Riwayat Stok Opname</a>
                 <div class="my-1 border-t border-slate-100"></div> 
@@ -269,9 +286,14 @@ function isDropdownActive($paths, $current_uri) {
             <span class="text-sm whitespace-nowrap transition-all duration-300">Metode Pembayaran</span>
         </a>
 
-        <a href="<?= BASE_URL ?>pos/pengaturan/barcode/" title="Pengaturan Barcode" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all mb-6 <?= getNavClass('/pos/pengaturan/barcode/', $current_uri) ?>">
+        <a href="<?= BASE_URL ?>pos/pengaturan/barcode/" title="Pengaturan Barcode" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/pengaturan/barcode/', $current_uri) ?>">
             <i class="fa-solid fa-barcode w-5 text-center text-lg shrink-0"></i> 
             <span class="text-sm whitespace-nowrap transition-all duration-300">Cetak Barcode</span>
+        </a>
+
+        <a href="<?= BASE_URL ?>pos/pengaturan/shift/" title="Pengaturan Shift" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all mb-6 <?= getNavClass('/pos/pengaturan/shift/', $current_uri) ?>">
+            <i class="fa-solid fa-business-time w-5 text-center text-lg shrink-0"></i> 
+            <span class="text-sm whitespace-nowrap transition-all duration-300">Pengaturan Shift</span>
         </a>
 
         <div class="px-2 text-[10px] font-black text-rose-500 uppercase tracking-widest mt-6 mb-2">Bahaya (Danger Zone)</div>

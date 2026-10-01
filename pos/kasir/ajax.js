@@ -88,7 +88,9 @@ document.addEventListener('alpine:init', () => {
         // --- TAB & SHIFT ---
         activeTab: 'reguler', 
         needsShiftOpen: false, isLoadingShift: false, masterShifts: [],
-        shiftForm: { shift_id: '', start_cash: '' },
+        activeShiftName: '',
+        startCashFormatted: '0',
+        shiftForm: { shift_id: '', start_cash: 0 },
         showCloseShiftModal: false, closeShiftCash: '',
 
         // --- KAS KELUAR ---
@@ -232,32 +234,58 @@ document.addEventListener('alpine:init', () => {
         },
 
         // --- FUNGSI SHIFT ---
-      async checkShiftStatus() {
+        updateKasirCashInput(val) {
+            const raw = String(val).replace(/[^0-9]/g, '');
+            const num = parseInt(raw, 10) || 0;
+            this.shiftForm.start_cash = num;
+            this.startCashFormatted = this.formatRupiah(num);
+        },
+
+        setKasirCashQuick(amount) {
+            this.shiftForm.start_cash = amount;
+            this.startCashFormatted = this.formatRupiah(amount);
+        },
+
+        async checkShiftStatus() {
             try {
-                // ARAHKAN KE logic_kasir.php
                 const res = await fetch(`logic_kasir.php?action=check_shift&nocache=${Date.now()}`); 
                 const rawText = await res.text();
                 try {
                     const result = JSON.parse(rawText);
                     if (result.status === 'success') {
                         this.needsShiftOpen = !result.has_open_shift;
+                        this.activeShiftName = result.shift_name_active || '';
+                        this.masterShifts = result.master_shifts || [];
+
+                        const defCash = result.default_start_cash || 0;
+                        this.shiftForm.start_cash = defCash;
+                        this.startCashFormatted = this.formatRupiah(defCash);
+
+                        const cur = this.masterShifts.find(s => s.is_current);
+                        this.shiftForm.shift_id = cur ? cur.id : (this.masterShifts[0]?.id || '');
                     }
                 } catch(err) { console.error("❌ ERROR PHP (Check Shift):", rawText); }
             } catch (e) { console.error("Error Cek Shift:", e); }
         },
 
-       async openShift() {
+        async openShift() {
+            if (!this.shiftForm.shift_id) {
+                Swal.fire('Peringatan', 'Silakan pilih salah satu shift kerja terlebih dahulu!', 'warning');
+                return;
+            }
             this.isLoadingShift = true;
             try {
                 const fd = new FormData(); 
+                fd.append('shift_id', this.shiftForm.shift_id);
+                fd.append('start_cash', this.shiftForm.start_cash || 0);
 
-                // ARAHKAN KE logic_kasir.php
                 const res = await fetch('logic_kasir.php?action=open_shift', { method: 'POST', body: fd });
                 const rawText = await res.text();
                 try {
                     const result = JSON.parse(rawText);
                     if (result.status === 'success') {
                         this.needsShiftOpen = false; 
+                        this.activeShiftName = result.shift_name || 'Shift Aktif';
                         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: result.message, showConfirmButton: false, timer: 1500 });
                         await this.loadLocalData(false);
                     } else { Swal.fire('Error', result.message, 'error'); }

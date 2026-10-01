@@ -53,7 +53,7 @@ self.addEventListener('fetch', event => {
   }
 
   // BYPASS CACHE UNTUK PROSES LOGOUT DAN ROUTER AUTENTIKASI
-  if (url.pathname.includes('logout_action.php') || url.pathname === '/pos-lovecakes/' || url.pathname === '/pos-lovecakes/index.php' || url.pathname.includes('/auth/')) {
+  if (url.pathname.includes('logout_action.php') || url.pathname.endsWith('/index.php') || url.pathname === '/' || url.pathname.includes('/auth/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
         return caches.match(event.request).then(res => res || new Response('Offline / Auth Unavailable', { status: 503 }));
@@ -84,7 +84,7 @@ self.addEventListener('fetch', event => {
       }).catch(async () => {
         // Jika internet mati dan file tidak ada di cache sama sekali
         if (event.request.mode === 'navigate') {
-          const cachedPage = await caches.match('./pos/kasir/index.php') || await caches.match('/pos-lovecakes/pos/kasir/index.php');
+          const cachedPage = await caches.match('./pos/kasir/index.php') || await caches.match('pos/kasir/index.php');
           if (cachedPage) return cachedPage;
         }
         // Selalu kembalikan Response valid agar event.respondWith tidak menerima undefined (mencegah TypeError)

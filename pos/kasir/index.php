@@ -6,7 +6,8 @@ $is_localhost = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos(
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 
 // URL UNTUK SISTEM POS
-$folder_pos = $is_localhost ? '/pos-lovecakes/' : '/'; 
+$base_sub = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/pos/') !== false ? trim(explode('/pos/', $_SERVER['SCRIPT_NAME'])[0], '/') : 'kasir-hariku';
+$folder_pos = $is_localhost ? ($base_sub !== '' ? '/' . $base_sub . '/' : '/') : '/'; 
 if (!defined('BASE_URL')) { define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder_pos); }
 $IMG_BASE_URL = $is_localhost 
     ? "http://localhost/sim-produksi-kue/assets/img/" 
@@ -22,7 +23,7 @@ if(!$toko) { $toko = ['store_name' => 'LOVE CAKES', 'store_address' => '-', 'sto
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <?php include '../../components/head.php'; ?>
+    <?php include '../../components/header.php'; ?>
 
     <script>
         const BASE_URL = "<?= BASE_URL ?>";
@@ -61,6 +62,10 @@ if(!$toko) { $toko = ['store_name' => 'LOVE CAKES', 'store_address' => '-', 'sto
 
                 <div x-show="!needsShiftOpen" class="hidden sm:flex bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-xs font-black items-center gap-2">
                     <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div> Kasir Aktif
+                </div>
+
+                <div x-show="!needsShiftOpen && activeShiftName" class="hidden sm:flex bg-blue-500/20 text-blue-200 border border-blue-400/30 px-3 py-1.5 rounded-lg text-xs font-black items-center gap-1.5 shadow-inner">
+                    <i class="fa-solid fa-clock text-blue-300"></i> <span x-text="activeShiftName"></span>
                 </div>
 
                 <?php if (!empty($_SESSION['pos_store_name'])): ?>
@@ -114,18 +119,86 @@ if(!$toko) { $toko = ['store_name' => 'LOVE CAKES', 'store_address' => '-', 'sto
             </div>
         </header>
 
-        <div x-show="needsShiftOpen" class="absolute inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center">
-            <div class="bg-white p-8 rounded-[2rem] shadow-2xl max-w-md w-full border border-slate-200 text-center relative overflow-hidden">
-                <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4"><i class="fa-solid fa-cash-register"></i></div>
-                <h2 class="text-2xl font-black text-slate-800 mb-2">Mulai Shift Kasir</h2>
-                <p class="text-sm font-bold text-slate-500 mb-6">Masukkan uang modal awal di laci kasir (Cash) untuk mulai transaksi.</p>
-                <form @submit.prevent="openShift()" class="space-y-4 text-left">
+        <div x-show="needsShiftOpen" class="absolute inset-0 z-[100] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="bg-white p-6 sm:p-8 rounded-[2rem] shadow-2xl max-w-lg w-full border border-slate-200 text-left relative overflow-hidden"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100">
+                <div class="flex items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+                    <div class="w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-blue-600/30 shrink-0">
+                        <i class="fa-solid fa-cash-register"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-800 leading-tight">Mulai Shift Kasir</h2>
+                        <p class="text-xs text-slate-500 font-medium">Pilih shift tugas aktif dari master data dan masukkan modal kas laci.</p>
+                    </div>
+                </div>
 
-                    <p class="text-sm font-bold text-slate-500 mb-6 text-center">Klik tombol di bawah untuk membuka laci dan memulai transaksi hari ini.</p>
+                <form @submit.prevent="openShift()" class="space-y-4">
+                    <!-- Pilihan Shift Dinamis -->
+                    <div>
+                        <label class="block text-xs font-black text-slate-600 uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-clock-rotate-left mr-1 text-blue-600"></i> Pilih Shift Operasional
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                            <template x-for="s in masterShifts" :key="s.id">
+                                <div @click="shiftForm.shift_id = s.id"
+                                    :class="shiftForm.shift_id == s.id ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-500/20 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'"
+                                    class="cursor-pointer p-3 rounded-xl border-2 transition-all relative flex flex-col justify-between">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <span class="font-black text-xs text-slate-800 block" x-text="s.shift_name"></span>
+                                            <span class="text-[11px] font-semibold text-slate-500 flex items-center gap-1 mt-0.5">
+                                                <i class="fa-regular fa-clock text-blue-500 text-[10px]"></i>
+                                                <span x-text="(s.start_time || '').substring(0,5) + ' - ' + (s.end_time || '').substring(0,5)"></span>
+                                            </span>
+                                        </div>
+                                        <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ml-1"
+                                            :class="shiftForm.shift_id == s.id ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white'">
+                                            <i x-show="shiftForm.shift_id == s.id" class="fa-solid fa-check text-[8px]"></i>
+                                        </div>
+                                    </div>
+                                    <template x-if="s.is_current">
+                                        <span class="inline-flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 w-fit mt-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Shift Saat Ini
+                                        </span>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
 
-                    <button type="submit" :disabled="isLoadingShift" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg transition-colors duration-200 flex items-center justify-center gap-2 mt-4 disabled:opacity-50">
-                        <i class="fa-solid fa-lock-open" :class="isLoadingShift ? 'fa-spin' : ''"></i> BUKA KASIR SEKARANG
-                    </button>
+                    <!-- Modal Awal Kas -->
+                    <div>
+                        <label class="block text-xs font-black text-slate-600 uppercase tracking-wider mb-1.5">
+                            <i class="fa-solid fa-money-bill-wave mr-1 text-emerald-600"></i> Modal Awal di Laci Kas (Cash)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-sm">Rp</span>
+                            <input type="text"
+                                :value="startCashFormatted"
+                                @input="updateKasirCashInput($event.target.value)"
+                                class="w-full pl-12 pr-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none focus:border-blue-600 focus:bg-white font-black text-slate-800 text-sm"
+                                placeholder="0">
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <button type="button" @click="setKasirCashQuick(0)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 0</button>
+                            <button type="button" @click="setKasirCashQuick(100000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 100.000</button>
+                            <button type="button" @click="setKasirCashQuick(200000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 200.000</button>
+                            <button type="button" @click="setKasirCashQuick(500000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 500.000</button>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Action -->
+                    <div class="pt-2 flex items-center gap-2.5">
+                        <a href="<?= BASE_URL ?>auth/" class="py-3 px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition-all text-center">
+                            Ganti Akun
+                        </a>
+                        <button type="submit" :disabled="isLoadingShift || !shiftForm.shift_id" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black py-3 rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fa-solid fa-lock-open" :class="isLoadingShift ? 'fa-spin' : ''"></i> BUKA KASIR SEKARANG
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

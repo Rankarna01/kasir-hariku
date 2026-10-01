@@ -22,13 +22,15 @@ if ($action === 'get_report' || $action === 'export_excel') {
         // QUERY LAPORAN SHIFT (Logic Hitung Uang Fisik Laci)
         $stmt_shift = $pdo->prepare("
             SELECT 
-                sh.id, COALESCE(u.name, 'Admin') as kasir_name, ms.shift_name, 
+                sh.id, COALESCE(u.name, 'Kasir') as kasir_name, COALESCE(ms.shift_name, 'Reguler') as shift_name, 
                 sh.start_time, sh.end_time, sh.start_cash, sh.end_cash, sh.status,
                 
                 (SELECT COALESCE(SUM(sp.amount), 0) FROM sale_payments_pos sp
                  LEFT JOIN payment_methods pm ON sp.payment_method = pm.name
+                 LEFT JOIN sales_pos s ON sp.sale_id = s.id
                  WHERE (pm.type = 'Cash' OR sp.payment_method = 'cash' OR sp.payment_method = 'Cash') 
-                 AND sp.created_at >= sh.start_time AND sp.created_at <= COALESCE(sh.end_time, NOW())) as total_cash_in,
+                 AND sp.created_at >= sh.start_time AND sp.created_at <= COALESCE(sh.end_time, NOW())
+                 AND (sh.warehouse_id IS NULL OR s.warehouse_id IS NULL OR s.warehouse_id = sh.warehouse_id)) as total_cash_in,
                  
                 (SELECT COALESCE(SUM(nominal), 0) FROM petty_cash_pos 
                  WHERE shift_history_id = sh.id AND jenis = 'keluar') as total_kas_keluar
