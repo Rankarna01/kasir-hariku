@@ -1,32 +1,73 @@
 <?php
-$is_localhost = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$folder = $is_localhost ? '/pos-lovecakes/' : '/';
+require_once __DIR__ . '/../config/env.php';
 
 if (!defined('BASE_URL')) { 
-    define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder); 
+    $is_localhost = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false);
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || ($_SERVER['SERVER_PORT'] ?? 80) == 443) ? "https://" : "http://";
+    $base_sub = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/pos/') !== false ? trim(explode('/pos/', $_SERVER['SCRIPT_NAME'])[0], '/') : 'kasir-hariku';
+    $folder = $is_localhost ? ($base_sub !== '' ? '/' . $base_sub . '/' : '/') : '/';
+    define('BASE_URL', $protocol . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $folder); 
 }
 ?>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title><?= $page_title ?? 'POS Sistem Kasir Offline' ?></title>
+<title><?= $page_title ?? 'Ayam Goreng Hariku - POS Kasir' ?></title>
 
 <link rel="manifest" href="<?= BASE_URL ?>manifest.json">
 
-<meta name="theme-color" content="#1e293b">
-<link rel="apple-touch-icon" href="<?= BASE_URL ?>pos/assets/img/icon-92.png">
+<meta name="theme-color" content="#FF3870">
+<link rel="apple-touch-icon" href="<?= BASE_URL ?>assets/img/logo-hariku.png">
+<link rel="icon" type="image/png" href="<?= BASE_URL ?>assets/img/logo-hariku.png">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-    // 🛠️ PERBAIKAN 2: Config Tailwind diletakkan di sini untuk membungkam peringatan kuning
     tailwind.config = {
         corePlugins: { preflight: true },
         theme: {
             extend: {
                 fontFamily: { sans: ['Poppins', 'sans-serif'] },
                 colors: {
-                    surface: '#FFFFFF', background: '#F8FAFC', primary: '#2563EB',
-                    secondary: '#94A3B8', accent: '#F59E0B', danger: '#EF4444', success: '#10B981'
+                    surface: '#FFFFFF',
+                    background: '#FFFFFF',
+                    primary: {
+                        DEFAULT: '#FF3870', // Ayam Goreng Hariku Pink
+                        50: '#FFF0F5',
+                        100: '#FFE2EC',
+                        200: '#FFC5D8',
+                        300: '#FF97B6',
+                        400: '#FF6492',
+                        500: '#FF3870',
+                        600: '#E62058',
+                        700: '#C01344',
+                        800: '#991138',
+                        900: '#7F1332'
+                    },
+                    chocolate: {
+                        DEFAULT: '#5C2D16', // Ayam Goreng Hariku Coklat
+                        50: '#FAF5F1',
+                        100: '#F4ECE4',
+                        200: '#E7D5C4',
+                        300: '#D5B79F',
+                        400: '#B6886A',
+                        500: '#8C5638',
+                        600: '#6E3E24',
+                        700: '#5C2D16',
+                        800: '#4A2311',
+                        900: '#33170B'
+                    },
+                    hariku: {
+                        pink: '#FF3870',
+                        pinkDark: '#E02360',
+                        pinkLight: '#FFF0F5',
+                        chocolate: '#5C2D16',
+                        chocolateDark: '#4A2311',
+                        chocolateLight: '#FDF6F2',
+                        gold: '#F59E0B'
+                    },
+                    secondary: '#64748B',
+                    accent: '#F59E0B',
+                    danger: '#EF4444',
+                    success: '#10B981'
                 }
             }
         }
@@ -50,16 +91,71 @@ if (!defined('BASE_URL')) {
         src: url('<?= BASE_URL ?>assets/fonts/poppins.woff2') format('woff2');
         font-weight: normal; font-style: normal;
     }
-    body { font-family: 'Poppins', sans-serif !important; background-color: #F8FAFC; }
+    body { 
+        font-family: 'Poppins', sans-serif !important; 
+        background-color: #FFFFFF !important; 
+        color: #33170B;
+    }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #E7D5C4; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #FF97B6; }
     
     /* INI KUNCI ANTI KEDAP-KEDIP */
     [x-cloak] { display: none !important; }
     
     #global-loader { display: none; backdrop-filter: blur(4px); }
     div:where(.swal2-container) { font-family: 'Poppins', sans-serif !important; }
+
+    /* ===== HARIKU BRAND HEADER / TOPBAR ===== */
+    header.bg-primary {
+        background: #FFFFFF !important;
+        color: #5C2D16 !important;
+        border-bottom: 2px solid #FFE4EC !important;
+        box-shadow: 0 4px 18px -4px rgba(255, 56, 112, 0.08) !important;
+    }
+    header.bg-primary h1, 
+    header.bg-primary h2, 
+    header.bg-primary h3 {
+        color: #5C2D16 !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.01em;
+    }
+    header.bg-primary p {
+        color: #8C5638 !important;
+    }
+    header.bg-primary button.text-white,
+    header.bg-primary a.text-white {
+        color: #5C2D16 !important;
+    }
+    header.bg-primary button.text-white:hover,
+    header.bg-primary a.text-white:hover {
+        background-color: #FFF0F5 !important;
+        color: #FF3870 !important;
+    }
+    header.bg-primary .text-blue-200, 
+    header.bg-primary .text-blue-100 {
+        color: #8C5638 !important;
+    }
+    header.bg-primary .hover\:text-blue-200:hover {
+        color: #FF3870 !important;
+    }
+    header.bg-primary .hover\:bg-blue-600:hover {
+        background-color: #FFF0F5 !important;
+        color: #FF3870 !important;
+    }
+    header.bg-primary .border-blue-400 {
+        border-color: #FFE4EC !important;
+    }
+    header.bg-primary .bg-black\/20 {
+        background: #FFF0F5 !important;
+        color: #5C2D16 !important;
+        border: 1px solid #FFC5D8 !important;
+        box-shadow: none !important;
+    }
+    header.bg-primary .bg-black\/20 i {
+        color: #FF3870 !important;
+    }
 </style>
 
 <script>
@@ -111,7 +207,7 @@ if (!defined('BASE_URL')) {
                     html: `<p style="color: #475569; font-weight: 500; font-size: 14px;">${message}</p>`,
                     icon: type,
                     confirmButtonText: 'Mengerti',
-                    confirmButtonColor: type === 'error' ? '#EF4444' : (type === 'warning' ? '#F59E0B' : '#2563EB'),
+                    confirmButtonColor: type === 'error' ? '#EF4444' : (type === 'warning' ? '#F59E0B' : '#FF3870'),
                     customClass: { popup: 'rounded-3xl shadow-2xl border border-slate-100', title: 'text-xl font-extrabold text-slate-800' }
                 });
             }
@@ -123,7 +219,7 @@ if (!defined('BASE_URL')) {
             Swal.fire({
                 title: 'Apakah Anda Yakin?',
                 html: `<p style="color: #475569; font-weight: 500; font-size: 14px;">${message}</p>`,
-                icon: 'warning', showCancelButton: true, confirmButtonColor: '#EF4444', cancelButtonColor: '#94A3B8',  
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#FF3870', cancelButtonColor: '#94A3B8',  
                 confirmButtonText: '<i class="fa-solid fa-check mr-1"></i> Ya, Lanjutkan!', cancelButtonText: 'Batal',
                 reverseButtons: true, customClass: { popup: 'rounded-3xl shadow-2xl border border-slate-100', title: 'text-xl font-extrabold text-slate-800' }
             }).then((result) => { if (result.isConfirmed) { callback(); } });
