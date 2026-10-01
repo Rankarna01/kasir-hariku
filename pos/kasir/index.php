@@ -9,16 +9,14 @@ $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVE
 $base_sub = isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], '/pos/') !== false ? trim(explode('/pos/', $_SERVER['SCRIPT_NAME'])[0], '/') : 'kasir-hariku';
 $folder_pos = $is_localhost ? (defined('BASE_URL') ? parse_url(BASE_URL, PHP_URL_PATH) : ($base_sub !== '' ? '/' . $base_sub . '/' : '/')) : '/';
 if (!defined('BASE_URL')) { define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder_pos); }
-$IMG_BASE_URL = $is_localhost 
-    ? "http://localhost/sim-produksi-kue/assets/img/" 
-    : "https://kokowms.my.id/assets/img/";
+$IMG_BASE_URL = defined('BASE_URL') ? BASE_URL . 'assets/img/' : '../../assets/img/';
 
 require_once '../../config/database.php';
 try {
     $stmt_toko = $pdo->query("SELECT * FROM store_settings_pos WHERE id = 1");
     $toko = $stmt_toko->fetch(PDO::FETCH_ASSOC);
 } catch (Exception $e) { $toko = false; }
-if(!$toko) { $toko = ['store_name' => 'LOVE CAKES', 'store_address' => '-', 'store_phone' => '-', 'receipt_footer' => 'Terima Kasih!']; }
+if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '-', 'store_phone' => '-', 'receipt_footer' => 'Terima Kasih!']; }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -53,8 +51,8 @@ if(!$toko) { $toko = ['store_name' => 'LOVE CAKES', 'store_address' => '-', 'sto
                     <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div> Kasir Aktif
                 </div>
 
-                <div x-show="!needsShiftOpen && activeShiftName" class="hidden sm:flex bg-blue-500/20 text-blue-200 border border-blue-400/30 px-3 py-1.5 rounded-lg text-xs font-black items-center gap-1.5 shadow-inner">
-                    <i class="fa-solid fa-clock text-blue-300"></i> <span x-text="activeShiftName"></span>
+                <div x-show="!needsShiftOpen && activeShiftName" class="hidden sm:flex bg-white/20 text-white border border-white/30 px-3 py-1.5 rounded-lg text-xs font-black items-center gap-1.5 shadow-inner">
+                    <i class="fa-solid fa-clock text-amber-300"></i> <span x-text="activeShiftName"></span>
                 </div>
 
                 <?php if (!empty($_SESSION['pos_store_name'])): ?>
@@ -114,7 +112,7 @@ if(!$toko) { $toko = ['store_name' => 'LOVE CAKES', 'store_address' => '-', 'sto
                  x-transition:enter-start="opacity-0 scale-95"
                  x-transition:enter-end="opacity-100 scale-100">
                 <div class="flex items-center gap-4 mb-4 pb-4 border-b border-slate-100">
-                    <div class="w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-blue-600/30 shrink-0">
+                    <div class="w-14 h-14 bg-gradient-to-tr from-primary to-rose-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-primary/30 shrink-0">
                         <i class="fa-solid fa-cash-register"></i>
                     </div>
                     <div>
@@ -127,23 +125,23 @@ if(!$toko) { $toko = ['store_name' => 'LOVE CAKES', 'store_address' => '-', 'sto
                     <!-- Pilihan Shift Dinamis -->
                     <div>
                         <label class="block text-xs font-black text-slate-600 uppercase tracking-wider mb-2">
-                            <i class="fa-solid fa-clock-rotate-left mr-1 text-blue-600"></i> Pilih Shift Operasional
+                            <i class="fa-solid fa-clock-rotate-left mr-1 text-primary"></i> Pilih Shift Operasional
                         </label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                             <template x-for="s in masterShifts" :key="s.id">
                                 <div @click="shiftForm.shift_id = s.id"
-                                    :class="shiftForm.shift_id == s.id ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-500/20 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'"
+                                    :class="shiftForm.shift_id == s.id ? 'border-primary bg-primary-50/80 ring-2 ring-primary/20 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'"
                                     class="cursor-pointer p-3 rounded-xl border-2 transition-all relative flex flex-col justify-between">
                                     <div class="flex items-start justify-between">
                                         <div>
                                             <span class="font-black text-xs text-slate-800 block" x-text="s.shift_name"></span>
                                             <span class="text-[11px] font-semibold text-slate-500 flex items-center gap-1 mt-0.5">
-                                                <i class="fa-regular fa-clock text-blue-500 text-[10px]"></i>
+                                                <i class="fa-regular fa-clock text-primary text-[10px]"></i>
                                                 <span x-text="(s.start_time || '').substring(0,5) + ' - ' + (s.end_time || '').substring(0,5)"></span>
                                             </span>
                                         </div>
                                         <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ml-1"
-                                            :class="shiftForm.shift_id == s.id ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white'">
+                                            :class="shiftForm.shift_id == s.id ? 'border-primary bg-primary text-white' : 'border-slate-300 bg-white'">
                                             <i x-show="shiftForm.shift_id == s.id" class="fa-solid fa-check text-[8px]"></i>
                                         </div>
                                     </div>
@@ -168,14 +166,14 @@ if(!$toko) { $toko = ['store_name' => 'LOVE CAKES', 'store_address' => '-', 'sto
                             <input type="text"
                                 :value="startCashFormatted"
                                 @input="updateKasirCashInput($event.target.value)"
-                                class="w-full pl-12 pr-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none focus:border-blue-600 focus:bg-white font-black text-slate-800 text-sm"
+                                class="w-full pl-12 pr-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none focus:border-primary focus:bg-white font-black text-slate-800 text-sm"
                                 placeholder="0">
                         </div>
                         <div class="flex flex-wrap gap-1.5 mt-2">
-                            <button type="button" @click="setKasirCashQuick(0)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 0</button>
-                            <button type="button" @click="setKasirCashQuick(100000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 100.000</button>
-                            <button type="button" @click="setKasirCashQuick(200000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 200.000</button>
-                            <button type="button" @click="setKasirCashQuick(500000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">Rp 500.000</button>
+                            <button type="button" @click="setKasirCashQuick(0)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-primary-50 hover:text-primary hover:border-primary/40 text-slate-600 transition-colors border border-transparent">Rp 0</button>
+                            <button type="button" @click="setKasirCashQuick(100000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-primary-50 hover:text-primary hover:border-primary/40 text-slate-600 transition-colors border border-transparent">Rp 100.000</button>
+                            <button type="button" @click="setKasirCashQuick(200000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-primary-50 hover:text-primary hover:border-primary/40 text-slate-600 transition-colors border border-transparent">Rp 200.000</button>
+                            <button type="button" @click="setKasirCashQuick(500000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-primary-50 hover:text-primary hover:border-primary/40 text-slate-600 transition-colors border border-transparent">Rp 500.000</button>
                         </div>
                     </div>
 
@@ -184,7 +182,7 @@ if(!$toko) { $toko = ['store_name' => 'LOVE CAKES', 'store_address' => '-', 'sto
                         <a href="<?= BASE_URL ?>auth/" class="py-3 px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition-all text-center">
                             Ganti Akun
                         </a>
-                        <button type="submit" :disabled="isLoadingShift || !shiftForm.shift_id" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black py-3 rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button type="submit" :disabled="isLoadingShift || !shiftForm.shift_id" class="flex-1 bg-gradient-to-r from-primary to-rose-600 hover:from-rose-600 hover:to-primary text-white font-black py-3 rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]">
                             <i class="fa-solid fa-lock-open" :class="isLoadingShift ? 'fa-spin' : ''"></i> BUKA KASIR SEKARANG
                         </button>
                     </div>

@@ -23,6 +23,12 @@ try {
 
         case 'import':
             header('Content-Type: application/json; charset=utf-8');
+            try {
+                $pdo->exec("ALTER TABLE products MODIFY COLUMN price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+                $pdo->exec("ALTER TABLE products MODIFY COLUMN online_price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+                $pdo->exec("ALTER TABLE products MODIFY COLUMN modal_price DECIMAL(15,2) DEFAULT 0.00");
+            } catch (Exception $e) {}
+
             if (!isset($_FILES['file_import']['tmp_name']) || empty($_FILES['file_import']['tmp_name'])) {
                 echo json_encode(['status' => 'error', 'message' => 'File CSV tidak ditemukan!']);
                 exit;
@@ -71,10 +77,19 @@ try {
             header('Content-Type: application/json; charset=utf-8');
             try {
                 $pdo->exec("ALTER TABLE products ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 AFTER online_price");
+                $pdo->exec("ALTER TABLE products MODIFY COLUMN price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+                $pdo->exec("ALTER TABLE products MODIFY COLUMN online_price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+                $pdo->exec("ALTER TABLE products MODIFY COLUMN modal_price DECIMAL(15,2) DEFAULT 0.00");
             } catch (Exception $e) {}
 
             $stmt = $pdo->query("SELECT id, code, name, category, image, modal_price, price, online_price, COALESCE(is_active, 1) as is_active FROM products ORDER BY id DESC");
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($data as &$item) {
+                $item['modal_price'] = (float)$item['modal_price'];
+                $item['price'] = (float)$item['price'];
+                $item['online_price'] = (float)$item['online_price'];
+            }
+            unset($item);
             echo json_encode(['status' => 'success', 'data' => $data]);
             break;
 
@@ -120,6 +135,9 @@ try {
             header('Content-Type: application/json; charset=utf-8');
             try {
                 $pdo->exec("ALTER TABLE products ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 AFTER online_price");
+                $pdo->exec("ALTER TABLE products MODIFY COLUMN price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+                $pdo->exec("ALTER TABLE products MODIFY COLUMN online_price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+                $pdo->exec("ALTER TABLE products MODIFY COLUMN modal_price DECIMAL(15,2) DEFAULT 0.00");
             } catch (Exception $e) {}
 
             $id = trim($_POST['id'] ?? '');
@@ -152,6 +170,10 @@ try {
                             @unlink($uploadDir . $imageName);
                         }
                         $imageName = $newImageName;
+                        $simImgDir = __DIR__ . '/../../../../sim-produksi-kue/assets/img/';
+                        if (is_dir($simImgDir)) {
+                            @copy($uploadDir . $newImageName, $simImgDir . $newImageName);
+                        }
                     }
                 }
             }

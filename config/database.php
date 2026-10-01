@@ -31,4 +31,37 @@ try {
     )");
     $pdo->exec("INSERT IGNORE INTO product_warehouse_stocks (product_id, warehouse_id, stock) SELECT id, stock, 1 FROM products");
 } catch (Exception $e) {}
+
+// Auto-migration: Perbesar kapasitas kolom price & online_price ke DECIMAL(15,2)
+// agar tidak terjadi "Numeric value out of range (1264)" saat input harga >= 100.000.000 (100 juta)
+try {
+    $colCheck = $pdo->query("SHOW COLUMNS FROM products LIKE 'price'")->fetch();
+    if ($colCheck && strpos(strtolower($colCheck['Type'] ?? ''), 'decimal(10') !== false) {
+        $pdo->exec("ALTER TABLE products MODIFY COLUMN price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+        $pdo->exec("ALTER TABLE products MODIFY COLUMN online_price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+        $pdo->exec("ALTER TABLE products MODIFY COLUMN modal_price DECIMAL(15,2) DEFAULT 0.00");
+    }
+} catch (Exception $e) {}
+
+try {
+    $colCheckDetails = $pdo->query("SHOW COLUMNS FROM sale_details_pos LIKE 'price'")->fetch();
+    if ($colCheckDetails && strpos(strtolower($colCheckDetails['Type'] ?? ''), 'decimal(10') !== false) {
+        $pdo->exec("ALTER TABLE sale_details_pos MODIFY COLUMN price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+        $pdo->exec("ALTER TABLE sale_details_pos MODIFY COLUMN subtotal DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+    }
+} catch (Exception $e) {}
+
+try {
+    $colCheckSales = $pdo->query("SHOW COLUMNS FROM sales_pos LIKE 'total_amount'")->fetch();
+    if ($colCheckSales && strpos(strtolower($colCheckSales['Type'] ?? ''), 'decimal(10') !== false) {
+        $pdo->exec("ALTER TABLE sales_pos MODIFY COLUMN subtotal DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+        $pdo->exec("ALTER TABLE sales_pos MODIFY COLUMN total_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+        $pdo->exec("ALTER TABLE sales_pos MODIFY COLUMN amount_paid DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+        $pdo->exec("ALTER TABLE sales_pos MODIFY COLUMN dp_amount DECIMAL(15,2) DEFAULT 0.00");
+        $pdo->exec("ALTER TABLE sales_pos MODIFY COLUMN change_amount DECIMAL(15,2) DEFAULT 0.00");
+        $pdo->exec("ALTER TABLE sales_pos MODIFY COLUMN shipping_cost DECIMAL(15,2) DEFAULT 0.00");
+        $pdo->exec("ALTER TABLE sales_pos MODIFY COLUMN payment_fee_amount DECIMAL(15,2) DEFAULT 0.00");
+        $pdo->exec("ALTER TABLE sales_pos MODIFY COLUMN cancelled_amount DECIMAL(15,2) DEFAULT 0.00");
+    }
+} catch (Exception $e) {}
 ?>

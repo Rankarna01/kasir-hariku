@@ -52,7 +52,7 @@ $page_title = "Store & Gudang - Love Cakes POS";
                 <!-- SUB-HEADER / ACTIONS -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h3 class="text-lg font-black text-slate-800">Daftar Cabang Store & Gudang</h3>
+                        <h3 class="text-lg font-black text-slate-800">Daftar Cabang Store & Outlet</h3>
                         <p class="text-xs text-slate-500 mt-0.5">Kelola daftar cabang outlet toko (Store) dan gudang penyimpanan produk.</p>
                     </div>
 
@@ -76,7 +76,7 @@ $page_title = "Store & Gudang - Love Cakes POS";
                                 <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-400 text-[11px] font-black uppercase tracking-wider">
                                     <th class="p-4 text-center w-16">No</th>
                                     <th class="p-4 w-36">Kode Store</th>
-                                    <th class="p-4">Nama Store / Gudang</th>
+                                    <th class="p-4">Nama Store / Outlet</th>
                                     <th class="p-4 text-center w-32">Aksi</th>
                                 </tr>
                             </thead>

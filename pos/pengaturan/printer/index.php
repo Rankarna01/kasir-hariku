@@ -61,9 +61,15 @@ $page_title = "Pengaturan Printer - Love Cakes POS";
                                     <i class="fa-brands fa-bluetooth"></i> Cari Bluetooth
                                 </button>
                                 <template x-if="isConnected">
-                                    <button @click="hapusPrinter()" class="bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white font-black py-2.5 px-4 rounded-xl text-xs border border-rose-200 transition-colors flex items-center justify-center shadow-sm">
-                                        <i class="fa-solid fa-trash"></i> Hapus
-                                    </button>
+                                    <div class="flex gap-2">
+                                        <button @click="testPrint()" :disabled="isTesting" class="flex-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-black py-2.5 px-3 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                                            <i class="fa-solid fa-receipt" :class="isTesting ? 'fa-spin' : ''"></i> 
+                                            <span x-text="isTesting ? 'Mencetak...' : 'Tes Cetak'"></span>
+                                        </button>
+                                        <button @click="hapusPrinter()" class="bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white font-black py-2.5 px-3 rounded-xl text-xs border border-rose-200 transition-colors flex items-center justify-center shadow-sm">
+                                            <i class="fa-solid fa-trash"></i> Hapus
+                                        </button>
+                                    </div>
                                 </template>
                             </div>
                         </div>

@@ -52,21 +52,54 @@ if (isset($_SESSION['pos_user_id'])) {
             <p class="text-xs text-[#8C5638] font-medium mt-0.5">Sistem Kasir & Operasional Toko</p>
         </div>
 
-        <!-- Role Selector (Segmented Toggle) -->
-        <div class="mb-5 p-1 bg-slate-100 rounded-xl flex items-center gap-1 border border-slate-200/80">
-            <button type="button" @click="setLoginRole('admin')" 
-                :class="loginRole === 'admin' ? 'bg-white text-[#5C2D16] shadow-xs font-bold border border-slate-200/70' : 'text-slate-500 hover:text-slate-800 font-medium'"
-                class="flex-1 py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-all">
-                <i class="fa-solid fa-user-shield text-xs" :class="loginRole === 'admin' ? 'text-[#5C2D16]' : 'text-slate-400'"></i>
-                <span>Administrator</span>
-            </button>
-            <button type="button" @click="setLoginRole('pegawai')" 
-                :class="loginRole === 'pegawai' ? 'bg-[#FF3870] text-white shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800 font-medium'"
-                class="flex-1 py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-all">
-                <i class="fa-solid fa-cash-register text-xs" :class="loginRole === 'pegawai' ? 'text-white' : 'text-slate-400'"></i>
-                <span>Pegawai (Kasir)</span>
-            </button>
+        <!-- Bottom Feature Highlights -->
+        <div class="relative z-10 w-full flex items-center justify-between text-xs text-white/80 pt-4 border-t border-white/15">
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt text-amber-300"></i> Transaksi Cepat</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-user-clock text-pink-300"></i> Shift Terkontrol</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-receipt text-emerald-300"></i> Rekap QRIS & Kas</span>
         </div>
+    </div>
+
+    <!-- ========== RIGHT LOGIN PANEL (CLEAN WHITE) ========== -->
+    <div class="flex-1 flex items-center justify-center p-6 sm:p-12 bg-white min-h-screen">
+        <div class="w-full max-w-md">
+
+            <!-- Mobile Mascot Header (hidden on desktop) -->
+            <div class="flex lg:hidden items-center justify-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-2xl p-0.5 bg-gradient-to-tr from-[#FF3870] to-[#F59E0B] shadow-sm shrink-0">
+                    <img src="<?= BASE_URL ?>assets/img/logo-hariku.png" alt="Ayam Goreng Hariku" class="w-full h-full object-cover rounded-[14px] bg-white">
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black tracking-widest text-[#5C2D16] uppercase">Ayam Goreng</span>
+                    <span class="text-xl font-black text-[#FF3870] tracking-tight">HARIKU</span>
+                </div>
+            </div>
+
+            <!-- Header Text -->
+            <div class="mb-6 fade-in-up">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF0F5] border border-[#FFC5D8] mb-2">
+                    <span class="w-2 h-2 rounded-full bg-[#FF3870] animate-pulse"></span>
+                    <span class="text-[10px] font-black text-[#FF3870] uppercase tracking-wider">Portal Kasir & Admin</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-black text-[#4A2311] leading-tight">Selamat Datang!</h2>
+                <p class="text-[#8C5638] text-xs sm:text-sm mt-1 font-medium">Silakan tentukan peran akses dan masuk ke akun Anda.</p>
+            </div>
+
+            <!-- ===== ROLE SELECTOR TABS (ADMIN vs PEGAWAI) ===== -->
+            <div class="mb-5 p-1.5 bg-[#FAF5F1] rounded-2xl flex items-center gap-1.5 border border-[#FFE4EC] shadow-xs fade-in-up">
+                <button type="button" @click="setLoginRole('admin')" 
+                    :class="loginRole === 'admin' ? 'bg-[#5C2D16] text-white shadow-md font-black' : 'text-[#5C2D16]/70 hover:text-[#5C2D16] font-bold'"
+                    class="flex-1 py-3 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all duration-200">
+                    <i class="fa-solid fa-shield-halved text-sm" :class="loginRole === 'admin' ? 'text-amber-300' : 'text-[#8C5638]'"></i>
+                    <span>Administrator</span>
+                </button>
+                <button type="button" @click="setLoginRole('pegawai')" 
+                    :class="loginRole === 'pegawai' ? 'bg-gradient-to-r from-[#FF3870] to-[#E02360] text-white shadow-md shadow-pink-500/25 font-black' : 'text-[#5C2D16]/70 hover:text-[#5C2D16] font-bold'"
+                    class="flex-1 py-3 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all duration-200">
+                    <i class="fa-solid fa-cash-register text-sm" :class="loginRole === 'pegawai' ? 'text-white' : 'text-[#8C5638]'"></i>
+                    <span>Pegawai (Kasir)</span>
+                </button>
+            </div>
 
         <!-- Role Subtitle / Notice -->
         <div class="mb-5 px-3 py-2 rounded-xl text-xs flex items-center gap-2.5 transition-colors"

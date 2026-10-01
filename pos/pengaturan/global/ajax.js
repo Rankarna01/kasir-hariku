@@ -93,8 +93,13 @@ document.addEventListener('alpine:init', () => {
 
                 if (result.status === 'success') {
                     // ✅ UPDATE MEMORI LOKAL agar mesin kasir langsung terpengaruh tanpa perlu refresh
-                    if(window.dbAuth) {
-                        await window.dbAuth.setItem('pos_settings', this.form);
+                    if (window.dbAuth) {
+                        try {
+                            const plainForm = JSON.parse(JSON.stringify(this.form));
+                            await window.dbAuth.setItem('pos_settings', plainForm);
+                        } catch (cacheErr) {
+                            console.warn("Gagal update local cache pos_settings:", cacheErr);
+                        }
                     }
                     
                     if (typeof Swal !== 'undefined') {

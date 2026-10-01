@@ -1062,11 +1062,12 @@ document.addEventListener('alpine:init', () => {
                     if (!this.inputUang || parseFloat(this.inputUang) < this.totalAmount) { Swal.fire('Perhatian', 'Uang diterima kurang dari total tagihan!', 'warning'); return; }
                     this.amountPaid = parseFloat(this.inputUang); this.changeAmount = this.amountPaid - this.totalAmount;
                 } else {
+                    // Non-tunai / QRIS: Tidak membatasi / tidak wajib isi ref, otomatis isi default jika kosong
                     if (!this.paymentReference || this.paymentReference.trim() === '') {
-                        Swal.fire('Perhatian', 'Ref. Pembayaran wajib diisi untuk metode non-tunai!', 'warning');
-                        return;
+                        this.paymentReference = '-';
                     }
-                    this.amountPaid = this.totalAmount; this.changeAmount = 0;
+                    this.amountPaid = this.totalAmount; 
+                    this.changeAmount = 0;
                 }
             }
             this.showCheckoutModal = false; this.executeCheckout();

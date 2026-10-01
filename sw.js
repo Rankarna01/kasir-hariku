@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lovecakes-pos-v8';
+const CACHE_NAME = 'lovecakes-pos-v9';
 
 // Daftar file Rangkaian UI yang wajib disimpan di brankas HP Kasir
 const urlsToCache = [
@@ -53,7 +53,7 @@ self.addEventListener('fetch', event => {
   }
 
   // BYPASS CACHE UNTUK PROSES LOGOUT DAN ROUTER AUTENTIKASI
-  if (url.pathname.includes('logout_action.php') || url.pathname === '/pos-lovecakes/' || url.pathname === '/pos-lovecakes/index.php' || url.pathname.includes('/auth/')) {
+  if (url.pathname.includes('logout_action.php') || url.pathname.includes('/auth/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
         return caches.match(event.request).then(res => res || new Response('Offline / Auth Unavailable', { status: 503 }));

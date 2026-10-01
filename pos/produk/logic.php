@@ -30,7 +30,7 @@ if ($action === 'read_produk') {
             FROM products p
             " . ($wh_id > 0 ? "LEFT JOIN product_warehouse_stocks pws ON p.id = pws.product_id AND pws.warehouse_id = $wh_id" : "") . "
             LEFT JOIN warehouses w ON " . ($wh_id > 0 ? "$wh_id = w.id" : "p.warehouse_id = w.id") . "
-            WHERE 1=1
+            WHERE 1=1 AND COALESCE(p.is_active, 1) = 1
         ";
         
         $params = [];

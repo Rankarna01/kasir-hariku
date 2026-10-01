@@ -6,15 +6,22 @@ let activePriceField = 'price';
 
 // ── FORMAT RUPIAH & QUICK NOMINAL HELPERS ──
 function unformatRupiah(val) {
-    if (!val) return 0;
-    const clean = val.toString().replace(/[^0-9]/g, '');
+    if (val === null || val === undefined || val === '') return 0;
+    if (typeof val === 'number') return Math.round(val);
+    
+    let str = val.toString().trim();
+    // Jika string berakhiran desimal seperti .00 dari database MySQL, buang desimalnya
+    if (/\.\d{1,2}$/.test(str)) {
+        str = str.replace(/\.\d{1,2}$/, '');
+    }
+    const clean = str.replace(/[^0-9]/g, '');
     return clean ? parseInt(clean, 10) : 0;
 }
 
 function formatRupiah(num) {
     if (num === null || num === undefined || num === '') return '0';
-    const number = typeof num === 'string' ? unformatRupiah(num) : Math.round(num);
-    return new Intl.NumberFormat('id-ID').format(number);
+    const number = typeof num === 'number' ? Math.round(num) : unformatRupiah(num);
+    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(number);
 }
 
 function formatRupiahInput(input) {
