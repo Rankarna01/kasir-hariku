@@ -182,10 +182,22 @@ function isDropdownActive($paths, $current_uri) {
                 <i id="icon-produk" class="fa-solid fa-chevron-<?= $isActive ? 'down' : 'right' ?> text-[10px] transition-transform duration-200"></i>
             </button>
             <div id="sub-produk" class="<?= $isActive ? 'flex' : 'hidden' ?> flex-col gap-1 mt-1 pl-10 pr-2 border-l border-pink-100 ml-3">
-                <a href="<?= BASE_URL ?>pos/produk/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/produk/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Katalog Produk</a>
-                <a href="<?= BASE_URL ?>pos/produk/mutasi/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/produk/mutasi/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Mutasi Antar Store</a>
-                <a href="<?= BASE_URL ?>pos/produk/cetak_barcode/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/produk/cetak_barcode/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Cetak Barcode SKU</a>
-                <a href="<?= BASE_URL ?>pos/produk/inventory/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/produk/inventory/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Inventory Gudang</a>
+                <a href="<?= BASE_URL ?>pos/produk/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/produk/', $current_uri) ?>">
+                    <i class="fa-solid fa-drumstick-bite text-[11px] w-4 text-center shrink-0"></i>
+                    <span>Katalog Produk</span>
+                </a>
+                <a href="<?= BASE_URL ?>pos/produk/mutasi/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/produk/mutasi/', $current_uri) ?>">
+                    <i class="fa-solid fa-truck-ramp-box text-[11px] w-4 text-center shrink-0"></i>
+                    <span>Mutasi Antar Store</span>
+                </a>
+                <a href="<?= BASE_URL ?>pos/produk/cetak_barcode/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/produk/cetak_barcode/', $current_uri) ?>">
+                    <i class="fa-solid fa-barcode text-[11px] w-4 text-center shrink-0"></i>
+                    <span>Cetak Barcode SKU</span>
+                </a>
+                <a href="<?= BASE_URL ?>pos/produk/inventory/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/produk/inventory/', $current_uri) ?>">
+                    <i class="fa-solid fa-boxes-stacked text-[11px] w-4 text-center shrink-0"></i>
+                    <span>Inventory Gudang</span>
+                </a>
             </div>
         </div>
 
@@ -216,9 +228,18 @@ function isDropdownActive($paths, $current_uri) {
                 <i id="icon-transaksi" class="fa-solid fa-chevron-<?= $isActive ? 'down' : 'right' ?> text-[10px] transition-transform duration-200"></i>
             </button>
             <div id="sub-transaksi" class="<?= $isActive ? 'flex' : 'hidden' ?> flex-col gap-1 mt-1 pl-10 pr-2 border-l border-pink-100 ml-3">
-                <a href="<?= BASE_URL ?>pos/transaksi/penjualan/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/transaksi/penjualan/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Riwayat Penjualan</a>
-                <a href="<?= BASE_URL ?>pos/transaksi/piutang/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/transaksi/piutang/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Pelunasan DP (Piutang)</a>
-                <a href="<?= BASE_URL ?>pos/transaksi/arus_kas/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/transaksi/arus_kas/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Kas Keluar (Petty Cash)</a>
+                <a href="<?= BASE_URL ?>pos/transaksi/penjualan/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/transaksi/penjualan/', $current_uri) ?>">
+                    <i class="fa-solid fa-receipt text-[11px] w-4 text-center shrink-0"></i>
+                    <span>Riwayat Penjualan</span>
+                </a>
+                <a href="<?= BASE_URL ?>pos/transaksi/piutang/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/transaksi/piutang/', $current_uri) ?>">
+                    <i class="fa-solid fa-file-invoice-dollar text-[11px] w-4 text-center shrink-0"></i>
+                    <span>Pelunasan DP (Piutang)</span>
+                </a>
+                <a href="<?= BASE_URL ?>pos/transaksi/arus_kas/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/transaksi/arus_kas/', $current_uri) ?>">
+                    <i class="fa-solid fa-money-bill-transfer text-[11px] w-4 text-center shrink-0"></i>
+                    <span>Kas Keluar (Petty Cash)</span>
+                </a>
             </div>
         </div>
 

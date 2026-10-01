@@ -110,6 +110,7 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
 </script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>assets/fontawesome-free-6.4.2-web/css/all.min.css">
 <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/fontawesome.css">
 
 <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
@@ -122,12 +123,31 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
 
 <style>
     /* ===== GLOBAL FONT: AVENIR (STANDARD 500) ===== */
-    *, html, body, button, input, select, textarea, div, p, span, h1, h2, h3, h4, h5, h6, a, table, td, th {
-        font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    html, body, button, input, select, textarea, div, p, span, h1, h2, h3, h4, h5, h6, a, table, td, th, label, li {
+        font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         font-weight: 500;
     }
     strong, b, .font-bold, .font-black, .font-extrabold {
         font-weight: 600 !important;
+    }
+
+    /* ===== CRITICAL: PROTECT FONT AWESOME ICONS DARI OVERRIDE FONT ===== */
+    .fa, .fa-solid, .fa-regular, .fa-brands, .fas, .far, .fab, 
+    i[class*="fa-"], span[class*="fa-"], [class^="fa-"], [class*=" fa-"] {
+        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+        font-style: normal;
+        font-weight: 900 !important;
+        display: inline-block;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+    }
+    .fa-brands, .fab {
+        font-family: "Font Awesome 6 Brands" !important;
+        font-weight: 400 !important;
+    }
+    .fa-regular, .far {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 400 !important;
     }
     body { 
         background-color: #FFFFFF !important; 
@@ -143,6 +163,58 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
     
     #global-loader { display: none; backdrop-filter: blur(4px); }
     div:where(.swal2-container) { font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', sans-serif !important; }
+
+    /* ===== DESKTOP HAMBURGER BUTTON IN TOPBAR ===== */
+    header.bg-primary button[onclick*="toggleSidebar"] {
+        display: inline-flex !important;
+    }
+
+    /* ===== COLLAPSIBLE SIDEBAR RULES ===== */
+    #main-sidebar {
+        transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+    }
+    #main-sidebar.sidebar-collapsed {
+        width: 72px !important;
+        min-width: 72px !important;
+        max-width: 72px !important;
+    }
+    #main-sidebar.sidebar-collapsed .sidebar-text,
+    #main-sidebar.sidebar-collapsed .sidebar-chevron,
+    #main-sidebar.sidebar-collapsed .sidebar-section-title,
+    #main-sidebar.sidebar-collapsed .outlet-filter-container,
+    #main-sidebar.sidebar-collapsed .sidebar-user-info {
+        display: none !important;
+    }
+    #main-sidebar.sidebar-collapsed .sidebar-collapsed-outlet {
+        display: flex !important;
+    }
+    #main-sidebar.sidebar-collapsed .sidebar-collapsed-divider {
+        display: block !important;
+    }
+    #main-sidebar.sidebar-collapsed .nav-item {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        width: 44px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+    #main-sidebar.sidebar-collapsed .nav-item i {
+        margin: 0 !important;
+        font-size: 1.15rem !important;
+    }
+    #main-sidebar.sidebar-collapsed .submenu-container {
+        display: none !important;
+    }
+    #main-sidebar.sidebar-collapsed .sidebar-header-box {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        justify-content: center !important;
+        gap: 0 !important;
+    }
+    #main-sidebar.sidebar-collapsed .sidebar-brand-link {
+        display: none !important;
+    }
 
     /* ===== HARIKU BRAND HEADER / TOPBAR ===== */
     header.bg-primary {
