@@ -42,17 +42,24 @@ if ($action === 'check_shift') {
     $setting = $stmt_set->fetch(PDO::FETCH_ASSOC);
     $default_cash = $setting ? (float)$setting['setting_value'] : 0;
 
-    if ($shift) {
+    $has_open = (!empty($shift) && !empty($shift['id']) && intval($shift['shift_id'] ?? 0) > 0);
+
+    if ($has_open) {
         $_SESSION['pos_active_shift_id'] = $shift['shift_id'];
         $_SESSION['pos_active_shift_name'] = $shift['shift_name'] ?? 'Shift Aktif';
         $_SESSION['pos_shift_history_id'] = $shift['id'];
+    } else {
+        unset($_SESSION['pos_active_shift_id']);
+        unset($_SESSION['pos_active_shift_name']);
+        unset($_SESSION['pos_shift_history_id']);
     }
 
+    if (ob_get_length()) ob_clean();
     echo json_encode([
         'status' => 'success', 
-        'has_open_shift' => !!$shift, 
-        'shift_id_active' => $shift ? $shift['id'] : null,
-        'shift_name_active' => $shift ? ($shift['shift_name'] ?? 'Shift Aktif') : null,
+        'has_open_shift' => $has_open, 
+        'shift_id_active' => $has_open ? $shift['id'] : null,
+        'shift_name_active' => $has_open ? ($shift['shift_name'] ?? 'Shift Aktif') : null,
         'master_shifts' => $master_shifts,
         'default_start_cash' => $default_cash
     ]);
@@ -84,6 +91,10 @@ if ($action === 'open_shift') {
     $stmtShiftName->execute([$shift_id]);
     $shiftName = $stmtShiftName->fetchColumn() ?: 'Shift Kasir';
 
+    // Tutup shift open lama jika ada agar tidak duplikat
+    $stmtCloseOld = $pdo->prepare("UPDATE shifts_history_pos SET status = 'closed', end_time = NOW() WHERE user_id = ? AND status = 'open'");
+    $stmtCloseOld->execute([$user_id]);
+
     $stmt = $pdo->prepare("INSERT INTO shifts_history_pos (user_id, shift_id, start_time, start_cash, status, warehouse_id) VALUES (?, ?, NOW(), ?, 'open', ?)");
     $stmt->execute([$user_id, $shift_id, $start_cash, $warehouse_id]);
     $history_id = $pdo->lastInsertId();
@@ -92,6 +103,7 @@ if ($action === 'open_shift') {
     $_SESSION['pos_active_shift_name'] = $shiftName;
     $_SESSION['pos_shift_history_id'] = $history_id;
 
+    if (ob_get_length()) ob_clean();
     echo json_encode([
         'status' => 'success', 
         'message' => 'Shift ' . $shiftName . ' berhasil dibuka!', 
@@ -102,15 +114,21 @@ if ($action === 'open_shift') {
 }
 
 if ($action === 'close_shift') {
-    $end_cash = $_POST['end_cash'] ?? 0;
+    $end_cash = floatval($_POST['end_cash'] ?? 0);
     // Get current open shift id
-    $stmtGet = $pdo->prepare("SELECT id FROM shifts_history_pos WHERE user_id = ? AND status = 'open' LIMIT 1");
+    $stmtGet = $pdo->prepare("SELECT id FROM shifts_history_pos WHERE user_id = ? AND status = 'open' ORDER BY id DESC LIMIT 1");
     $stmtGet->execute([$user_id]);
     $open_shift = $stmtGet->fetch(PDO::FETCH_ASSOC);
     $shift_id = $open_shift ? $open_shift['id'] : 0;
 
-    $stmt = $pdo->prepare("UPDATE shifts_history_pos SET status = 'closed', end_time = NOW(), end_cash = ? WHERE id = ?");
-    $stmt->execute([$end_cash, $shift_id]);
+    $stmt = $pdo->prepare("UPDATE shifts_history_pos SET status = 'closed', end_time = NOW(), end_cash = ? WHERE user_id = ? AND status = 'open'");
+    $stmt->execute([$end_cash, $user_id]);
+
+    unset($_SESSION['pos_active_shift_id']);
+    unset($_SESSION['pos_active_shift_name']);
+    unset($_SESSION['pos_shift_history_id']);
+
+    if (ob_get_length()) ob_clean();
     echo json_encode(['status' => 'success', 'message' => 'Kasir Berhasil Ditutup!', 'shift_id' => $shift_id]);
     exit;
 }

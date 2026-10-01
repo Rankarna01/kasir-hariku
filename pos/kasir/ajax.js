@@ -258,17 +258,23 @@ document.addEventListener('alpine:init', () => {
                         this.masterShifts = result.master_shifts || [];
 
                         const defCash = result.default_start_cash || 0;
-                        this.shiftForm.start_cash = defCash;
-                        this.startCashFormatted = this.formatRupiah(defCash);
+                        if (!this.shiftForm.start_cash) {
+                            this.shiftForm.start_cash = defCash;
+                            this.startCashFormatted = this.formatRupiah(defCash);
+                        }
 
                         const cur = this.masterShifts.find(s => s.is_current);
-                        this.shiftForm.shift_id = cur ? cur.id : (this.masterShifts[0]?.id || '');
+                        this.shiftForm.shift_id = cur ? cur.id : (this.masterShifts[0]?.id || 1);
                     }
                 } catch(err) { console.error("❌ ERROR PHP (Check Shift):", rawText); }
             } catch (e) { console.error("Error Cek Shift:", e); }
         },
 
         async openShift() {
+            if (!this.shiftForm.shift_id) {
+                const cur = this.masterShifts.find(s => s.is_current);
+                this.shiftForm.shift_id = cur ? cur.id : (this.masterShifts[0]?.id || 1);
+            }
             if (!this.shiftForm.shift_id) {
                 Swal.fire('Peringatan', 'Silakan pilih salah satu shift kerja terlebih dahulu!', 'warning');
                 return;
@@ -288,10 +294,20 @@ document.addEventListener('alpine:init', () => {
                         this.activeShiftName = result.shift_name || 'Shift Aktif';
                         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: result.message, showConfirmButton: false, timer: 1500 });
                         await this.loadLocalData(false);
-                    } else { Swal.fire('Error', result.message, 'error'); }
-                } catch(err) { console.error("❌ ERROR PHP (Open Shift):", rawText); }
-            } catch (e) { Swal.fire('Error', 'Gagal membuka kasir.', 'error'); } 
-            finally { this.isLoadingShift = false; }
+                        setTimeout(() => { if(this.$refs.barcodeScanner) this.$refs.barcodeScanner.focus() }, 500);
+                    } else { 
+                        Swal.fire('Gagal Membuka Shift', result.message || 'Terjadi kesalahan sistem.', 'error'); 
+                    }
+                } catch(err) { 
+                    console.error("❌ ERROR PHP (Open Shift):", rawText); 
+                    Swal.fire('Error Server', 'Respon server tidak valid saat membuka shift.', 'error');
+                }
+            } catch (e) { 
+                console.error("Error openShift:", e);
+                Swal.fire('Error Koneksi', 'Gagal membuka kasir. Cek koneksi internet Anda.', 'error'); 
+            } finally { 
+                this.isLoadingShift = false; 
+            }
         },
 
       openCloseShiftModal() { this.closeShiftCash = ''; this.showCloseShiftModal = true; },
