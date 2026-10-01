@@ -72,9 +72,16 @@ if ($action === 'login_pos') {
             if (empty($full_base_url)) {
                 $is_localhost = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false);
                 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || ($_SERVER['SERVER_PORT'] ?? 80) == 443) ? "https://" : "http://";
-                $app_dir = basename(dirname(__DIR__));
-                $folder = $is_localhost ? '/' . $app_dir . '/' : '/';
+                $folder = $is_localhost ? '/pos-lovecakes/' : '/';
                 $full_base_url = $protocol . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $folder;
+            }
+
+            // 🎯 REDIRECT BERDASARKAN ROLE
+            $role_name_lower = strtolower($user['role_name'] ?? '');
+            if (in_array($role_name_lower, ['kasir', 'cashier'])) {
+                $redirect_url = rtrim($full_base_url, '/') . '/pos/kasir/'; 
+            } else {
+                $redirect_url = rtrim($full_base_url, '/') . '/pos/dashboard/'; 
             }
 
             // Data untuk PWA (Offline)

@@ -54,10 +54,12 @@ if (!defined('BASE_URL')) {
             || (isset($_SERVER['SERVER_PORT']) && (int) $_SERVER['SERVER_PORT'] === 443);
         $protocol = $is_https ? 'https://' : 'http://';
 
-        // Turunkan folder aplikasi dari DOCUMENT_ROOT agar bekerja baik saat
-        // dipasang di root domain maupun di subfolder seperti /pos-lovecakes/.
-        $app_root = realpath(dirname(__DIR__));
-        $document_root = isset($_SERVER['DOCUMENT_ROOT']) ? realpath($_SERVER['DOCUMENT_ROOT']) : false;
+        // Turunkan folder aplikasi dari DOCUMENT_ROOT agar bekerja dinamis saat
+        // dipasang di root domain, localhost, maupun subfolder jaringan lokal
+        $app_root = str_replace('\\', '/', rtrim(realpath(dirname(__DIR__)), '/'));
+        $document_root = isset($_SERVER['DOCUMENT_ROOT']) && !empty($_SERVER['DOCUMENT_ROOT']) 
+            ? str_replace('\\', '/', rtrim(realpath($_SERVER['DOCUMENT_ROOT']), '/')) 
+            : '';
         $folder = '/';
 
         if ($app_root && $document_root) {
@@ -70,11 +72,9 @@ if (!defined('BASE_URL')) {
             } elseif (str_starts_with($normalized_app_root . '/', $document_prefix)) {
                 $relative_path = substr($normalized_app_root, strlen($normalized_document_root));
                 $folder = '/' . trim($relative_path, '/') . '/';
-            } else {
-                $folder = '/' . trim(basename($normalized_app_root), '/') . '/';
             }
         } elseif ($is_local_request) {
-            $folder = '/' . trim(basename(dirname(__DIR__)), '/') . '/';
+            $folder = '/pos-lovecakes/';
         }
 
         define('BASE_URL', $protocol . $host . $folder);

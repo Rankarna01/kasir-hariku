@@ -111,9 +111,24 @@ function isDropdownActive($paths, $current_uri) {
             <span class="text-sm whitespace-nowrap transition-all duration-300">Dashboard</span>
         </a>
 
-        <div class="px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-6 mb-2">Operasional</div>
+        <div class="px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-6 mb-2">Data Master</div>
 
-        <!-- MENU PRODUK & INVENTORY DI-HIDE SESUAI PERMINTAAN CLIENT -->
+        <a href="<?= BASE_URL ?>pos/master_gudang/" title="Store & Gudang" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/master_gudang/', $current_uri) ?>">
+            <i class="fa-solid fa-store w-5 text-center text-lg shrink-0"></i> 
+            <span class="text-sm whitespace-nowrap transition-all duration-300">Store & Gudang</span>
+        </a>
+
+        <a href="<?= BASE_URL ?>pos/master_produk/" title="Data Produk" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/master_produk/', $current_uri) ?>">
+            <i class="fa-solid fa-box w-5 text-center text-lg shrink-0"></i> 
+            <span class="text-sm whitespace-nowrap transition-all duration-300">Data Produk</span>
+        </a>
+
+        <a href="<?= BASE_URL ?>pos/master_kategori/" title="Kategori Produk" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/master_kategori/', $current_uri) ?>">
+            <i class="fa-solid fa-tags w-5 text-center text-lg shrink-0"></i> 
+            <span class="text-sm whitespace-nowrap transition-all duration-300">Kategori Produk</span>
+        </a>
+
+        <div class="px-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-6 mb-2">Operasional</div>
 
         <a href="<?= BASE_URL ?>pos/opname/" title="Stok Opname" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/opname/', $current_uri) ?>">
             <i class="fa-solid fa-boxes-stacked w-5 text-center text-lg shrink-0"></i> 
