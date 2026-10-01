@@ -164,8 +164,12 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
     /* INI KUNCI ANTI KEDAP-KEDIP */
     [x-cloak] { display: none !important; }
     
-    #global-loader { display: none; backdrop-filter: blur(4px); }
-    div:where(.swal2-container) { font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', sans-serif !important; }
+    /* SweetAlert standard font & always on top of all modals/drawers */
+    div:where(.swal2-container),
+    .swal2-container { 
+        font-family: 'Avenir', 'Avenir Next', 'Plus Jakarta Sans', sans-serif !important; 
+        z-index: 100000 !important; 
+    }
 
     /* ===== DESKTOP HAMBURGER BUTTON IN TOPBAR ===== */
     header.bg-primary button[onclick*="toggleSidebar"] {

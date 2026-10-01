@@ -30,6 +30,12 @@ function isDropdownActive($paths, $current_uri) {
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #E7D5C4; border-radius: 10px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #FF97B6; }
+
+    /* Pastikan popup SweetAlert2 selalu berada di lapisan paling depan */
+    div:where(.swal2-container),
+    .swal2-container {
+        z-index: 100000 !important;
+    }
 </style>
 
 <aside id="main-sidebar" class="w-[268px] bg-white border-r border-[#FFE4EC] flex-col shadow-sm fixed inset-y-0 left-0 z-[70] transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 flex h-screen max-h-screen">
@@ -152,10 +158,10 @@ function isDropdownActive($paths, $current_uri) {
             <span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span> Operasional
         </div>
 
-        <a href="<?= BASE_URL ?>pos/opname/" title="Stok Opname" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/opname/', $current_uri) ?>">
+        <!-- <a href="<?= BASE_URL ?>pos/opname/" title="Stok Opname" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/opname/', $current_uri) ?>">
             <i class="fa-solid fa-boxes-stacked w-5 text-center text-base shrink-0"></i> 
             <span class="text-xs font-bold whitespace-nowrap">Stok Opname</span>
-        </a>
+        </a> -->
 
         <a href="<?= BASE_URL ?>pos/produk/custom_items/" title="Item & Harga Dinamis" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/produk/custom_items/', $current_uri) ?>">
             <i class="fa-solid fa-sliders w-5 text-center text-base shrink-0"></i> 
@@ -250,7 +256,6 @@ function isDropdownActive($paths, $current_uri) {
                 <a href="<?= BASE_URL ?>pos/laporan/produk_kategori/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/produk_kategori/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Analisa Produk Laku</a>
                 <a href="<?= BASE_URL ?>pos/laporan/pelanggan/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/pelanggan/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Riwayat Pelanggan</a>
                 <a href="<?= BASE_URL ?>pos/laporan/penjualan/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/penjualan/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Penjualan</a>
-                <a href="<?= BASE_URL ?>pos/laporan/opname/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/opname/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Riwayat Stok Opname</a>
                 <div class="my-1 border-t border-[#FFE4EC]"></div> 
                 <a href="<?= BASE_URL ?>pos/transaksi/pembayaran_digital/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/transaksi/pembayaran_digital/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Rekap QRIS & E-Wallet</a>
                 <a href="<?= BASE_URL ?>pos/laporan/pencairan/" class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/laporan/pencairan/', $current_uri) ?>"><i class="fa-solid fa-circle text-[5px] opacity-50"></i> Pencairan Dana</a>
@@ -409,6 +414,12 @@ function isDropdownActive($paths, $current_uri) {
 
     // ===== FUNGSI LOGOUT ADMIN =====
     function doLogoutAdmin() {
+        var sidebar = document.getElementById('main-sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+            if (typeof toggleSidebar === 'function') toggleSidebar();
+        }
+
         var jalankanLogout = function() {
             try {
                 var dbAuth = localforage.createInstance({ name: 'pos_db', storeName: 'auth_store' });
