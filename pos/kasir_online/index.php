@@ -4,7 +4,7 @@ require_once '../../config/database.php';
 
 $is_localhost = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$folder_pos = $is_localhost ? '/pos-lovecakes/' : '/'; 
+$folder_pos = $is_localhost ? (defined('BASE_URL') ? parse_url(BASE_URL, PHP_URL_PATH) : '/sistem-kasir/kasir-hariku/') : '/'; 
 if (!defined('BASE_URL')) { define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder_pos); }
 $IMG_BASE_URL = $is_localhost ? "http://localhost/sim-produksi-kue/assets/img/" : "https://kokowms.my.id/assets/img/";
 

@@ -2,6 +2,147 @@ let allProducts = [];
 let allCustomPOS = [];
 let activeCategory = 'Semua';
 let currentTab = 'produk';
+let activePriceField = 'price';
+
+// ── FORMAT RUPIAH & QUICK NOMINAL HELPERS ──
+function unformatRupiah(val) {
+    if (!val) return 0;
+    const clean = val.toString().replace(/[^0-9]/g, '');
+    return clean ? parseInt(clean, 10) : 0;
+}
+
+function formatRupiah(num) {
+    if (num === null || num === undefined || num === '') return '0';
+    const number = typeof num === 'string' ? unformatRupiah(num) : Math.round(num);
+    return new Intl.NumberFormat('id-ID').format(number);
+}
+
+function formatRupiahInput(input) {
+    let cursorPosition = input.selectionStart;
+    let originalLength = input.value.length;
+    let numericValue = unformatRupiah(input.value);
+    
+    input.value = numericValue === 0 && input.value === '' ? '' : formatRupiah(numericValue);
+    
+    // Adjust cursor position after formatting
+    let newLength = input.value.length;
+    cursorPosition = cursorPosition + (newLength - originalLength);
+    if (cursorPosition >= 0 && input.setSelectionRange) {
+        input.setSelectionRange(cursorPosition, cursorPosition);
+    }
+}
+
+function setActivePriceField(fieldId) {
+    activePriceField = fieldId;
+    const nameMap = {
+        'modal_price': 'Modal',
+        'price': 'Jual Off',
+        'online_price': 'Jual On'
+    };
+    const el = document.getElementById('activePriceName');
+    if (el) {
+        el.innerText = nameMap[fieldId] || 'Jual Off';
+    }
+}
+
+function addQuickNominal(amount) {
+    const input = document.getElementById(activePriceField) || document.getElementById('price');
+    if (!input) return;
+    
+    let currentVal = unformatRupiah(input.value);
+    let newVal = currentVal + amount;
+    input.value = formatRupiah(newVal);
+    
+    // Pulse animation for visual feedback
+    input.classList.add('ring-2', 'ring-emerald-400');
+    setTimeout(() => {
+        input.classList.remove('ring-2', 'ring-emerald-400');
+    }, 250);
+}
+
+function syncOnlinePrice() {
+    const offInput = document.getElementById('price');
+    const onInput = document.getElementById('online_price');
+    if (offInput && onInput) {
+        onInput.value = offInput.value;
+        onInput.classList.add('ring-2', 'ring-blue-400');
+        setTimeout(() => {
+            onInput.classList.remove('ring-2', 'ring-blue-400');
+        }, 250);
+    }
+}
+
+function resetActivePrice() {
+    const input = document.getElementById(activePriceField) || document.getElementById('price');
+    if (input) {
+        input.value = '0';
+    }
+}
+
+// ── TOGGLE STATUS PRODUK UI (MODAL) ──
+function updateToggleUI(checked) {
+    const hiddenInput = document.getElementById('is_active');
+    const icon = document.getElementById('status-icon');
+    const label = document.getElementById('status-label');
+
+    if (hiddenInput) hiddenInput.value = checked ? '1' : '0';
+
+    if (checked) {
+        if (icon) icon.className = 'fa-solid fa-circle-check text-emerald-500';
+        if (label) {
+            label.innerText = 'Produk Aktif (Dijual di Kasir)';
+            label.className = 'text-[11px] text-emerald-600 font-bold mt-0.5';
+        }
+    } else {
+        if (icon) icon.className = 'fa-solid fa-circle-xmark text-rose-500';
+        if (label) {
+            label.innerText = 'Produk Non-aktif (Disembunyikan dari Kasir)';
+            label.className = 'text-[11px] text-rose-500 font-bold mt-0.5';
+        }
+    }
+}
+
+// ── TOGGLE STATUS DARI TABEL LANGSUNG ──
+async function toggleProductStatus(id, currentStatus) {
+    try {
+        const formData = new FormData();
+        formData.append('id', id);
+
+        const response = await fetch('logic.php?action=toggle_status', {
+            method: 'POST',
+            body: formData
+        });
+        const res = await response.json();
+
+        if (res.status === 'success') {
+            // Update local state
+            const targetProd = allProducts.find(p => p.id == id);
+            if (targetProd) {
+                targetProd.is_active = res.is_active;
+            }
+            filterProduk();
+
+            if (typeof Swal !== 'undefined') {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+                Toast.fire({
+                    icon: res.is_active == 1 ? 'success' : 'info',
+                    title: res.message
+                });
+            }
+        } else {
+            alert(res.message || 'Gagal mengubah status produk');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Terjadi kesalahan saat mengubah status produk!');
+    }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     loadCategoriesDropdown();
@@ -156,8 +297,16 @@ function resetFormProduk() {
     document.getElementById('formProduk').reset();
     document.getElementById('product_id').value = '';
     document.getElementById('old_image').value = '';
+    document.getElementById('modal_price').value = '0';
+    document.getElementById('price').value = '0';
+    document.getElementById('online_price').value = '0';
     document.getElementById('image_preview').src = '../../assets/img/no-image.svg';
     document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-box text-primary"></i> Tambah Produk Baru';
+    
+    const toggle = document.getElementById('is_active_toggle');
+    if (toggle) toggle.checked = true;
+    updateToggleUI(true);
+    setActivePriceField('price');
 }
 
 function openModalImport() {
@@ -206,7 +355,7 @@ async function loadData() {
     const refreshIcon = document.getElementById('refresh-icon');
     if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
-    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 font-medium"><i class="fa-solid fa-circle-notch fa-spin mr-2 text-primary"></i> Memuat data produk...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-400 font-medium"><i class="fa-solid fa-circle-notch fa-spin mr-2 text-primary"></i> Memuat data produk...</td></tr>`;
 
     try {
         const response = await fetch('logic.php?action=read');
@@ -217,11 +366,11 @@ async function loadData() {
             buildCategoryFilter(allProducts);
             filterProduk();
         } else {
-            tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-rose-500 font-medium">Gagal memuat: ${res.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-rose-500 font-medium">Gagal memuat: ${res.message}</td></tr>`;
         }
     } catch (err) {
         console.error(err);
-        tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-rose-500 font-medium">Terjadi kesalahan koneksi data produk.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-rose-500 font-medium">Terjadi kesalahan koneksi data produk.</td></tr>`;
     } finally {
         if (refreshIcon) refreshIcon.classList.remove('fa-spin');
     }
@@ -277,26 +426,27 @@ function filterProduk() {
 function renderTableProduk(products) {
     const tbody = document.getElementById('table-body');
     if (!products || products.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 font-medium">Tidak ada produk ditemukan.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-400 font-medium">Tidak ada produk ditemukan.</td></tr>`;
         return;
     }
 
     let html = '';
     products.forEach((item, index) => {
         const safeItem = JSON.stringify(item).replace(/'/g, "&apos;");
-        const rpModal = new Intl.NumberFormat('id-ID').format(item.modal_price || 0);
-        const rpJual = new Intl.NumberFormat('id-ID').format(item.price || 0);
-        const rpOnline = new Intl.NumberFormat('id-ID').format(item.online_price || 0);
+        const rpModal = formatRupiah(item.modal_price || 0);
+        const rpJual = formatRupiah(item.price || 0);
+        const rpOnline = formatRupiah(item.online_price || 0);
+        const isActive = (item.is_active !== undefined && item.is_active !== null) ? (parseInt(item.is_active) === 1) : true;
 
         const imgSrc = (item.image && item.image !== 'no-image.png' && item.image !== 'no-image.svg') 
             ? `../../assets/img/${item.image}` 
             : `../../assets/img/no-image.svg`;
 
         html += `
-            <tr class="hover:bg-slate-50/80 transition-colors">
+            <tr class="hover:bg-slate-50/80 transition-colors ${!isActive ? 'bg-slate-50/50 opacity-75' : ''}">
                 <td class="p-4 text-center font-bold text-slate-400">${index + 1}</td>
                 <td class="p-4 text-center">
-                    <img src="${imgSrc}" onerror="this.onerror=null; this.src='../../assets/img/no-image.svg';" class="w-11 h-11 object-cover rounded-xl border border-slate-200 shadow-xs mx-auto bg-slate-50" alt="${item.name}">
+                    <img src="${imgSrc}" onerror="this.onerror=null; this.src='../../assets/img/no-image.svg';" class="w-11 h-11 object-cover rounded-xl border border-slate-200 shadow-xs mx-auto bg-slate-50 ${!isActive ? 'grayscale' : ''}" alt="${item.name}">
                 </td>
                 <td class="p-4">
                     <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-slate-100 text-slate-700 font-mono">
@@ -304,7 +454,10 @@ function renderTableProduk(products) {
                     </span>
                 </td>
                 <td class="p-4">
-                    <div class="font-bold text-slate-800 text-sm">${item.name}</div>
+                    <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        ${item.name}
+                        ${!isActive ? '<span class="px-1.5 py-0.5 bg-rose-50 text-rose-600 text-[10px] rounded font-bold">Nonaktif</span>' : ''}
+                    </div>
                 </td>
                 <td class="p-4">
                     <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-blue-50 text-blue-700 border border-blue-100">
@@ -317,6 +470,18 @@ function renderTableProduk(products) {
                 <td class="p-4 text-right">
                     <div class="font-black text-emerald-600 text-xs">Off: Rp ${rpJual}</div>
                     <div class="font-bold text-blue-600 text-[11px]">On: Rp ${rpOnline}</div>
+                </td>
+                <td class="p-4 text-center">
+                    <div class="flex flex-col items-center justify-center gap-1">
+                        <button type="button" onclick="toggleProductStatus(${item.id}, ${isActive ? 1 : 0})" 
+                            class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isActive ? 'bg-emerald-500' : 'bg-slate-300'}" 
+                            title="Klik untuk ${isActive ? 'non-aktifkan' : 'aktifkan'} produk">
+                            <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${isActive ? 'translate-x-5' : 'translate-x-0'}"></span>
+                        </button>
+                        <span class="text-[10px] font-black uppercase tracking-wider ${isActive ? 'text-emerald-600' : 'text-slate-400'}">
+                            ${isActive ? 'Aktif' : 'Non-aktif'}
+                        </span>
+                    </div>
                 </td>
                 <td class="p-4 text-center">
                     <div class="flex items-center justify-center gap-2">
@@ -338,9 +503,19 @@ function editProduk(item) {
     document.getElementById('product_id').value = item.id;
     document.getElementById('code').value = item.code || '';
     document.getElementById('name').value = item.name || '';
-    document.getElementById('modal_price').value = item.modal_price || 0;
-    document.getElementById('price').value = item.price || 0;
-    document.getElementById('online_price').value = item.online_price || 0;
+    
+    // Format harga dengan titik Rupiah
+    document.getElementById('modal_price').value = formatRupiah(item.modal_price || 0);
+    document.getElementById('price').value = formatRupiah(item.price || 0);
+    document.getElementById('online_price').value = formatRupiah(item.online_price || 0);
+    
+    // Set status toggle
+    const isActive = (item.is_active !== undefined && item.is_active !== null) ? (parseInt(item.is_active) === 1) : true;
+    const toggle = document.getElementById('is_active_toggle');
+    if (toggle) toggle.checked = isActive;
+    updateToggleUI(isActive);
+    setActivePriceField('price');
+
     document.getElementById('old_image').value = item.image || '';
 
     // Load category options then select

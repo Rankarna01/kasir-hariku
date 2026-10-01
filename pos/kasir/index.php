@@ -6,7 +6,7 @@ $is_localhost = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos(
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 
 // URL UNTUK SISTEM POS
-$folder_pos = $is_localhost ? '/pos-lovecakes/' : '/'; 
+$folder_pos = $is_localhost ? (defined('BASE_URL') ? parse_url(BASE_URL, PHP_URL_PATH) : '/sistem-kasir/kasir-hariku/') : '/'; 
 if (!defined('BASE_URL')) { define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . $folder_pos); }
 $IMG_BASE_URL = $is_localhost 
     ? "http://localhost/sim-produksi-kue/assets/img/" 

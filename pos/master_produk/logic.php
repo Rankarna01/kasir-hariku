@@ -46,12 +46,12 @@ try {
                 if (empty($code) || empty($name)) continue;
 
                 $cat   = trim($data[2] ?? '');
-                $modal = (float)($data[3] ?? 0);
-                $price = (float)($data[4] ?? 0);
-                $onPrice = (float)($data[5] ?? 0);
+                $modal = (float)str_replace(['.', ',', ' '], '', $data[3] ?? '0');
+                $price = (float)str_replace(['.', ',', ' '], '', $data[4] ?? '0');
+                $onPrice = (float)str_replace(['.', ',', ' '], '', $data[5] ?? '0');
 
-                $stmt = $pdo->prepare("INSERT INTO products (code, name, category, modal_price, price, online_price) 
-                                      VALUES (?, ?, ?, ?, ?, ?) 
+                $stmt = $pdo->prepare("INSERT INTO products (code, name, category, modal_price, price, online_price, is_active) 
+                                      VALUES (?, ?, ?, ?, ?, ?, 1) 
                                       ON DUPLICATE KEY UPDATE 
                                       name = VALUES(name), 
                                       category = VALUES(category), 
@@ -69,7 +69,11 @@ try {
 
         case 'read':
             header('Content-Type: application/json; charset=utf-8');
-            $stmt = $pdo->query("SELECT id, code, name, category, image, modal_price, price, online_price FROM products ORDER BY id DESC");
+            try {
+                $pdo->exec("ALTER TABLE products ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 AFTER online_price");
+            } catch (Exception $e) {}
+
+            $stmt = $pdo->query("SELECT id, code, name, category, image, modal_price, price, online_price, COALESCE(is_active, 1) as is_active FROM products ORDER BY id DESC");
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
             echo json_encode(['status' => 'success', 'data' => $data]);
             break;
@@ -81,15 +85,53 @@ try {
             echo json_encode(['status' => 'success', 'data' => $cats]);
             break;
 
+        case 'toggle_status':
+            header('Content-Type: application/json; charset=utf-8');
+            try {
+                $pdo->exec("ALTER TABLE products ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 AFTER online_price");
+            } catch (Exception $e) {}
+
+            $id = intval($_POST['id'] ?? 0);
+            if ($id <= 0) {
+                echo json_encode(['status' => 'error', 'message' => 'ID produk tidak valid!']);
+                exit;
+            }
+
+            $stmtCek = $pdo->prepare("SELECT COALESCE(is_active, 1) FROM products WHERE id = ?");
+            $stmtCek->execute([$id]);
+            $curr = $stmtCek->fetchColumn();
+            if ($curr === false) {
+                echo json_encode(['status' => 'error', 'message' => 'Produk tidak ditemukan!']);
+                exit;
+            }
+
+            $newStatus = ($curr == 1) ? 0 : 1;
+            $stmtUp = $pdo->prepare("UPDATE products SET is_active = ? WHERE id = ?");
+            $stmtUp->execute([$newStatus, $id]);
+
+            echo json_encode([
+                'status' => 'success',
+                'is_active' => $newStatus,
+                'message' => 'Status produk berhasil diubah menjadi ' . ($newStatus ? 'Aktif' : 'Non-aktif')
+            ]);
+            break;
+
         case 'save':
             header('Content-Type: application/json; charset=utf-8');
+            try {
+                $pdo->exec("ALTER TABLE products ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 AFTER online_price");
+            } catch (Exception $e) {}
+
             $id = trim($_POST['id'] ?? '');
             $code = strtoupper(trim($_POST['code'] ?? ''));
             $name = trim($_POST['name'] ?? '');
             $category = trim($_POST['category'] ?? '');
-            $modal_price = (float)($_POST['modal_price'] ?? 0);
-            $price = (float)($_POST['price'] ?? 0);
-            $online_price = (float)($_POST['online_price'] ?? 0);
+
+            // Bersihkan format titik rupiah agar tersimpan sebagai angka numerik murni
+            $modal_price = (float)str_replace(['.', ',', ' '], '', $_POST['modal_price'] ?? '0');
+            $price = (float)str_replace(['.', ',', ' '], '', $_POST['price'] ?? '0');
+            $online_price = (float)str_replace(['.', ',', ' '], '', $_POST['online_price'] ?? '0');
+            $is_active = isset($_POST['is_active']) ? intval($_POST['is_active']) : 1;
             $imageName = $_POST['old_image'] ?? '';
 
             if (empty($code) || empty($name)) {
@@ -123,8 +165,8 @@ try {
                     exit;
                 }
 
-                $stmt = $pdo->prepare("INSERT INTO products (code, name, category, modal_price, price, online_price, image) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$code, $name, $category, $modal_price, $price, $online_price, $imageName]);
+                $stmt = $pdo->prepare("INSERT INTO products (code, name, category, modal_price, price, online_price, is_active, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$code, $name, $category, $modal_price, $price, $online_price, $is_active, $imageName]);
                 echo json_encode(['status' => 'success', 'message' => 'Produk baru berhasil ditambahkan!']);
             } else {
                 // Cek duplikasi kode selain id saat ini
@@ -135,8 +177,8 @@ try {
                     exit;
                 }
 
-                $stmt = $pdo->prepare("UPDATE products SET code = ?, name = ?, category = ?, modal_price = ?, price = ?, online_price = ?, image = ? WHERE id = ?");
-                $stmt->execute([$code, $name, $category, $modal_price, $price, $online_price, $imageName, $id]);
+                $stmt = $pdo->prepare("UPDATE products SET code = ?, name = ?, category = ?, modal_price = ?, price = ?, online_price = ?, is_active = ?, image = ? WHERE id = ?");
+                $stmt->execute([$code, $name, $category, $modal_price, $price, $online_price, $is_active, $imageName, $id]);
                 echo json_encode(['status' => 'success', 'message' => 'Data produk berhasil diperbarui!']);
             }
             break;

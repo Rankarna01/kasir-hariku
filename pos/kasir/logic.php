@@ -55,7 +55,7 @@ if ($action === 'get_master_data') {
         $pdo->exec("INSERT IGNORE INTO product_warehouse_stocks (product_id, warehouse_id, stock) SELECT id, stock, 1 FROM products");
     } catch(Exception $e){}
 
-    $stmt_p = $pdo->prepare("SELECT p.*, COALESCE(pws.stock, 0) as stock FROM products p LEFT JOIN product_warehouse_stocks pws ON p.id = pws.product_id AND pws.warehouse_id = ? ORDER BY p.name ASC");
+    $stmt_p = $pdo->prepare("SELECT p.*, COALESCE(pws.stock, 0) as stock FROM products p LEFT JOIN product_warehouse_stocks pws ON p.id = pws.product_id AND pws.warehouse_id = ? WHERE COALESCE(p.is_active, 1) = 1 ORDER BY p.name ASC");
     $stmt_p->execute([$wh_id]);
     $products = $stmt_p->fetchAll(PDO::FETCH_ASSOC);
     $customers = $pdo->query("SELECT id, name, points FROM customers_pos ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
