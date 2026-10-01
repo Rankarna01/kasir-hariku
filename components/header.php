@@ -1,4 +1,7 @@
 <?php
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    session_start();
+}
 require_once __DIR__ . '/../config/env.php';
 
 if (!defined('BASE_URL')) { 
@@ -216,9 +219,10 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
         display: none !important;
     }
 
-    /* ===== HARIKU BRAND HEADER / TOPBAR ===== */
-    header.bg-primary {
+    /* ===== HARIKU BRAND HEADER / TOPBAR (PERMANENT WHITE BG) ===== */
+    header.bg-primary, header.bg-primary:hover {
         background: #FFFFFF !important;
+        background-color: #FFFFFF !important;
         color: #5C2D16 !important;
         border-bottom: 2px solid #FFE4EC !important;
         box-shadow: 0 4px 18px -4px rgba(255, 56, 112, 0.08) !important;
@@ -266,8 +270,8 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
         color: #FF3870 !important;
     }
 
-    /* ===== ATURAN WARNA HOVER PINK & COKLAT ===== */
-    /* 1. Warna Coklat saat di-hover berubah jadi Pink */
+    /* ===== HOVER RULES: CLEAN PINK & SOFT TONES (NO DARK BROWN ON HOVER) ===== */
+    /* 1. Teks dan Link saat di-hover: menjadi Pink */
     .text-\[\#5C2D16\], .text-\[\#4A2311\], .text-\[\#8C5638\], .text-chocolate {
         transition: color 0.15s ease, background-color 0.15s ease;
     }
@@ -280,32 +284,19 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
     .hover\:text-\[\#FF3870\]:hover {
         color: #FF3870 !important;
     }
-    .bg-\[\#5C2D16\]:hover,
-    .bg-chocolate:hover,
-    .hover\:bg-\[\#FF3870\]:hover {
-        background-color: #FF3870 !important;
-        color: #FFFFFF !important;
-    }
 
-    /* 2. Warna Pink saat di-hover berubah jadi Coklat */
-    .text-\[\#FF3870\], .text-primary, .text-pink-600, .text-pink-500 {
-        transition: color 0.15s ease, background-color 0.15s ease;
+    /* 2. Tombol Pink saat di-hover: menjadi Dark Pink (#E02360), BUKAN coklat */
+    .bg-\[\#FF3870\], .bg-primary, .bg-pink-600, .bg-pink-500 {
+        transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
     }
-    a.text-\[\#FF3870\]:hover,
-    a.text-primary:hover,
-    a.text-pink-600:hover,
-    button:hover > .text-\[\#FF3870\],
-    a:hover > .text-\[\#FF3870\],
-    .hover\:text-\[\#5C2D16\]:hover {
-        color: #5C2D16 !important;
-    }
-    .bg-\[\#FF3870\]:hover,
-    .bg-primary:hover,
-    .bg-pink-600:hover,
     button.bg-\[\#FF3870\]:hover,
     button.bg-primary:hover,
-    .hover\:bg-\[\#5C2D16\]:hover {
-        background-color: #5C2D16 !important;
+    button.bg-pink-600:hover,
+    a.bg-\[\#FF3870\]:hover,
+    a.bg-primary:hover,
+    .hover\:bg-\[\#E02360\]:hover,
+    .hover\:bg-pink-700:hover {
+        background-color: #E02360 !important;
         color: #FFFFFF !important;
     }
 
@@ -330,7 +321,7 @@ $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
         border-color: #FF3870 !important;
     }
     .hover\:bg-blue-600:hover, .hover\:bg-blue-700:hover, .hover\:bg-blue-800:hover, .hover\:bg-blue-500:hover {
-        background-color: #5C2D16 !important;
+        background-color: #E02360 !important;
         color: #FFFFFF !important;
     }
     .hover\:text-blue-600:hover, .hover\:text-blue-700:hover, .hover\:text-blue-800:hover, .hover\:text-blue-500:hover {

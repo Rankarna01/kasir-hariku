@@ -77,9 +77,9 @@ function isDropdownActive($paths, $current_uri) {
 
 <aside id="main-sidebar" class="w-[260px] bg-white border-r border-[#FFE4EC] flex-col shadow-sm fixed inset-y-0 left-0 z-[70] transform -translate-x-full md:relative md:translate-x-0 flex h-screen max-h-screen">
 
-    <!-- HEADER SIDEBAR (LOGO & HAMBURGER TOGGLE) -->
+    <!-- HEADER SIDEBAR (LOGO HARIKU) -->
     <div class="h-16 flex items-center justify-between px-3.5 border-b border-[#FFE4EC] shrink-0 bg-white sidebar-header-box">
-        <a href="<?= BASE_URL ?>pos/dashboard/" class="flex items-center gap-2.5 overflow-hidden group" title="Ayam Goreng Hariku">
+        <a href="<?= BASE_URL ?>pos/dashboard/" onclick="handleBrandClick(event)" class="flex items-center gap-2.5 overflow-hidden group" title="Ayam Goreng Hariku">
             <div class="w-10 h-10 rounded-xl p-0.5 bg-gradient-to-tr from-[#FF3870] to-[#F59E0B] shadow-xs shrink-0 flex items-center justify-center">
                 <img src="<?= BASE_URL ?>assets/img/logo-hariku.png" alt="Ayam Goreng Hariku" class="w-full h-full object-cover rounded-[10px] bg-white">
             </div>
@@ -92,15 +92,10 @@ function isDropdownActive($paths, $current_uri) {
             </div>
         </a>
 
-        <!-- Hamburger Icon Toggle (Desktop & Mobile) -->
-        <div class="flex items-center gap-0.5">
-            <button type="button" onclick="toggleSidebarCollapse()" class="text-[#5C2D16]/70 hover:text-[#FF3870] hover:bg-[#FFF0F5] w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer" title="Perkecil / Perbesar Menu (Icon Only)">
-                <i class="fa-solid fa-bars text-sm"></i>
-            </button>
-            <button type="button" onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-[#FF3870] p-1.5 rounded-xl hover:bg-[#FFF0F5] transition-colors" title="Tutup Menu">
-                <i class="fa-solid fa-xmark text-sm"></i>
-            </button>
-        </div>
+        <!-- Tombol Tutup Khusus Mobile (Tidak ada duplikat hamburger) -->
+        <button type="button" onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-[#FF3870] p-1.5 rounded-xl hover:bg-[#FFF0F5] transition-colors" title="Tutup Menu">
+            <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
     </div>
 
     <!-- FILTER OUTLET / STORE SWITCHER (CLEAN SELECT DROPDOWN, TANPA CARD/GRID) -->
@@ -600,6 +595,15 @@ function isDropdownActive($paths, $current_uri) {
                 icon.classList.remove('fa-chevron-down');
                 icon.classList.add('fa-chevron-right');
             }
+        }
+    }
+
+    // ===== BRAND CLICK (EXPANDS IF CURRENTLY COLLAPSED) =====
+    function handleBrandClick(e) {
+        var sidebar = document.getElementById('main-sidebar');
+        if (sidebar && sidebar.classList.contains('sidebar-collapsed')) {
+            e.preventDefault();
+            toggleSidebarCollapse();
         }
     }
 
