@@ -54,13 +54,16 @@ $stmtShifts = $pdo->prepare("
 $stmtShifts->execute($params);
 $rawShifts = $stmtShifts->fetchAll(PDO::FETCH_ASSOC);
 
-// All active users
+// All active staff (Kecualikan Admin/Owner Backoffice)
 $stmtUsers = $pdo->query("
     SELECT u.id, u.name, r.role_name, COALESCE(w.name, 'Store 01') as store_name
     FROM users_pos u
     LEFT JOIN roles_pos r ON u.role_id = r.id
     LEFT JOIN warehouses w ON u.warehouse_id = w.id
-    ORDER BY r.role_name ASC, u.name ASC
+    WHERE u.role_id != 1 
+      AND LOWER(COALESCE(r.role_name, '')) NOT LIKE '%admin%' 
+      AND LOWER(COALESCE(r.role_name, '')) NOT LIKE '%owner%'
+    ORDER BY u.name ASC
 ");
 $allUsers = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
 
@@ -79,6 +82,11 @@ foreach ($allUsers as $u) {
 }
 
 foreach ($rawShifts as $s) {
+    $roleCheck = strtolower($s['role_name'] ?? '');
+    if (strpos($roleCheck, 'admin') !== false || strpos($roleCheck, 'owner') !== false) {
+        continue;
+    }
+
     $uId = $s['user_id'];
     if (!isset($employees[$uId])) {
         $employees[$uId] = [

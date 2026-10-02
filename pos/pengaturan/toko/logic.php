@@ -86,12 +86,66 @@ if ($action === 'save_settings') {
         }
 
         $pdo->commit();
+
+        // Otomatis sinkronisasi manifest.json PWA agar logo instalan PWA selalu sama dengan logo toko
+        syncManifestPwa($pdo);
+
         echo json_encode(['status' => 'success', 'message' => 'Pengaturan berhasil disimpan!']);
     } catch (Exception $e) {
         $pdo->rollBack();
         echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan: ' . $e->getMessage()]);
     }
     exit;
+}
+
+// Fungsi Sinkronisasi Manifest PWA
+function syncManifestPwa($pdo) {
+    try {
+        $stmt = $pdo->query("SELECT store_name, logo FROM store_settings_pos WHERE id = 1 LIMIT 1");
+        $store = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
+        $sName = !empty($store['store_name']) ? trim($store['store_name']) : 'AYAM GORENG HARIKU';
+        $shName = mb_substr($sName, 0, 15);
+        $logo = 'assets/img/logo-hariku.png';
+        $mime = 'image/png';
+
+        if (!empty($store['logo'])) {
+            $realFile = __DIR__ . '/../../../assets/img/' . $store['logo'];
+            if (file_exists($realFile)) {
+                $logo = 'assets/img/' . $store['logo'];
+                $ext = strtolower(pathinfo($store['logo'], PATHINFO_EXTENSION));
+                if ($ext === 'jpg' || $ext === 'jpeg') $mime = 'image/jpeg';
+                elseif ($ext === 'webp') $mime = 'image/webp';
+            }
+        }
+
+        $manifestFile = __DIR__ . '/../../../manifest.json';
+        $pwa = [
+            "name" => $sName,
+            "short_name" => $shName,
+            "description" => "Sistem Kasir Pintar Offline-First " . $sName,
+            "start_url" => "./pos/kasir/index.php",
+            "scope" => "./",
+            "display" => "standalone",
+            "orientation" => "any",
+            "background_color" => "#ffffff",
+            "theme_color" => "#FF3870",
+            "icons" => [
+                [
+                    "src" => $logo,
+                    "sizes" => "192x192",
+                    "type" => $mime,
+                    "purpose" => "any"
+                ],
+                [
+                    "src" => $logo,
+                    "sizes" => "512x512",
+                    "type" => $mime,
+                    "purpose" => "any maskable"
+                ]
+            ]
+        ];
+        @file_put_contents($manifestFile, json_encode($pwa, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    } catch (Exception $e) {}
 }
 
 // --- LIST PIN SUPERVISOR OTP ---

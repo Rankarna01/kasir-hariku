@@ -17,14 +17,29 @@ if (!defined('BASE_URL')) {
 <?php
 $raw_title = $page_title ?? 'Ayam Goreng Hariku - POS Kasir';
 $display_title = str_ireplace('Love Cakes', 'Ayam Goreng Hariku', $raw_title);
+
+// Ambil logo toko dinamis dari settings
+$pwa_logo_src = BASE_URL . 'assets/img/logo-hariku.png';
+if (isset($pdo)) {
+    try {
+        $stmt_hdr_logo = $pdo->query("SELECT logo FROM store_settings_pos WHERE id = 1 LIMIT 1");
+        $hdr_store = $stmt_hdr_logo ? $stmt_hdr_logo->fetch(PDO::FETCH_ASSOC) : null;
+        if (!empty($hdr_store['logo'])) {
+            $check_file = __DIR__ . '/../assets/img/' . $hdr_store['logo'];
+            if (file_exists($check_file)) {
+                $pwa_logo_src = BASE_URL . 'assets/img/' . $hdr_store['logo'];
+            }
+        }
+    } catch (Exception $e) {}
+}
 ?>
 <title><?= htmlspecialchars($display_title) ?></title>
 
-<link rel="manifest" href="<?= BASE_URL ?>manifest.json">
+<link rel="manifest" href="<?= BASE_URL ?>manifest.php">
 
 <meta name="theme-color" content="#FF3870">
-<link rel="apple-touch-icon" href="<?= BASE_URL ?>assets/img/logo-hariku.png">
-<link rel="icon" type="image/png" href="<?= BASE_URL ?>assets/img/logo-hariku.png">
+<link rel="apple-touch-icon" href="<?= $pwa_logo_src ?>">
+<link rel="icon" type="image/png" href="<?= $pwa_logo_src ?>">
 
 <!-- Web Fonts: Avenir / Avenir Next with high-quality fallback -->
 <link rel="preconnect" href="https://fonts.googleapis.com">

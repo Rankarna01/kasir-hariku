@@ -95,7 +95,7 @@ $page_title = "Dashboard - Love Cakes POS";
                         <div>
                             <div class="flex justify-between items-center mb-6">
                                 <h4 class="font-black text-slate-800 text-lg">Laporan Penjualan (7 Hari Terakhir)</h4>
-                                <span class="text-xs font-bold text-primary bg-blue-50 px-3 py-1 rounded-lg">Pendapatan</span>
+                                <span class="text-xs font-black text-[#FF3870] bg-[#FFF0F5] border border-[#FFC5D8] px-3 py-1 rounded-xl">Pendapatan</span>
                             </div>
                             
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-y-6 gap-x-4 mb-6">
@@ -154,7 +154,7 @@ $page_title = "Dashboard - Love Cakes POS";
                             <h4 class="font-black text-slate-800 text-lg">Riwayat Penjualan Terakhir</h4>
                             <p class="text-xs text-slate-400 font-medium">Daftar transaksi terbaru beserta aksi cetak struk dan invoice</p>
                         </div>
-                        <a href="../transaksi/penjualan/" class="text-xs font-black text-primary bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-colors">
+                        <a href="../transaksi/penjualan/" class="text-xs font-black text-[#FF3870] bg-[#FFF0F5] hover:bg-[#FF3870] hover:text-white border border-[#FFC5D8] px-4 py-2 rounded-xl transition-all">
                             Lihat Semua Transaksi <i class="fa-solid fa-arrow-right ml-1"></i>
                         </a>
                     </div>

@@ -82,9 +82,10 @@ document.addEventListener('alpine:init', () => {
 
         get filteredEmployees() {
             let list = this.employees;
-            if (this.roleFilter !== 'all') {
-                const rf = this.roleFilter.toLowerCase();
-                list = list.filter(e => e.role_name && e.role_name.toLowerCase().includes(rf));
+            if (this.roleFilter === 'bertugas') {
+                list = list.filter(e => Number(e.total_shifts) > 0);
+            } else if (this.roleFilter === 'belum_bertugas') {
+                list = list.filter(e => Number(e.total_shifts) === 0);
             }
             if (this.searchQuery.trim() !== '') {
                 const q = this.searchQuery.toLowerCase();

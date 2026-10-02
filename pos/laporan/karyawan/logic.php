@@ -65,14 +65,17 @@ if ($action === 'get_report' || $action === 'export_excel') {
         $stmtShifts->execute($params_shifts);
         $rawShifts = $stmtShifts->fetchAll(PDO::FETCH_ASSOC);
 
-        // Fetch list of all active users in POS for complete staff roster
+        // Fetch list of all active staff in POS for staff roster (Kecualikan Owner/Admin Backoffice)
         $stmtAllUsers = $pdo->query("
             SELECT u.id, u.name, u.username, r.role_name, u.warehouse_id,
                    COALESCE(w.name, 'Store 01') as store_name
             FROM users_pos u
             LEFT JOIN roles_pos r ON u.role_id = r.id
             LEFT JOIN warehouses w ON u.warehouse_id = w.id
-            ORDER BY r.role_name ASC, u.name ASC
+            WHERE u.role_id != 1 
+              AND LOWER(COALESCE(r.role_name, '')) NOT LIKE '%admin%' 
+              AND LOWER(COALESCE(r.role_name, '')) NOT LIKE '%owner%'
+            ORDER BY u.name ASC
         ");
         $allUsers = $stmtAllUsers->fetchAll(PDO::FETCH_ASSOC);
 
@@ -106,6 +109,12 @@ if ($action === 'get_report' || $action === 'export_excel') {
         foreach ($rawShifts as $s) {
             $uId = $s['user_id'];
             if ($filter_user > 0 && $uId != $filter_user) continue;
+
+            // Abaikan shift milik Admin/Owner dari laporan kinerja karyawan
+            $roleCheck = strtolower($s['role_name'] ?? '');
+            if (strpos($roleCheck, 'admin') !== false || strpos($roleCheck, 'owner') !== false) {
+                continue;
+            }
 
             // If user wasn't in allUsers for some reason, create entry
             if (!isset($employeesMap[$uId])) {

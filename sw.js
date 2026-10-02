@@ -1,7 +1,8 @@
-const CACHE_NAME = 'lovecakes-pos-v9';
+const CACHE_NAME = 'hariku-pos-v10';
 
 // Daftar file Rangkaian UI yang wajib disimpan di brankas HP Kasir
 const urlsToCache = [
+  './manifest.php',
   './manifest.json',
   './pos/kasir/index.php',
   './pos/kasir/ajax.js'

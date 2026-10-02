@@ -1,4 +1,4 @@
 <?php
-header("Location: shift/");
+header("Location: data/");
 exit;
 ?>

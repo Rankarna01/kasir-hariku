@@ -126,11 +126,11 @@ $page_title = "Laporan Karyawan & Kasir - Love Cakes POS";
                             <input type="text" x-model="searchQuery" placeholder="Cari nama karyawan / outlet..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20">
                         </div>
 
-                        <!-- Role Filter -->
+                        <!-- Filter Status Bertugas -->
                         <select x-model="roleFilter" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none">
-                            <option value="all">Semua Role Jabatan</option>
-                            <option value="kasir">Kasir</option>
-                            <option value="admin">Admin / Backoffice</option>
+                            <option value="all">Semua Kasir Toko</option>
+                            <option value="bertugas">Sudah Bertugas (Ada Shift)</option>
+                            <option value="belum_bertugas">Belum Bertugas</option>
                         </select>
                     </div>
 

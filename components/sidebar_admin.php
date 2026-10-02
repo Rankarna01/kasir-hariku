@@ -211,11 +211,6 @@ function isDropdownActive($paths, $current_uri) {
         </div>
         <div class="sidebar-collapsed-divider hidden border-t border-[#FFE4EC] my-1.5"></div>
 
-        <a href="<?= BASE_URL ?>pos/opname/" title="Stok Opname" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/opname/', $current_uri) ?>">
-            <i class="fa-solid fa-clipboard-check nav-icon w-5 text-center text-base shrink-0"></i> 
-            <span class="sidebar-text text-xs font-bold whitespace-nowrap">Stok Opname</span>
-        </a>
-
         <a href="<?= BASE_URL ?>pos/produk/custom_items/" title="Item & Harga Dinamis" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/produk/custom_items/', $current_uri) ?>">
             <i class="fa-solid fa-sliders nav-icon w-5 text-center text-base shrink-0"></i> 
             <span class="sidebar-text text-xs font-bold whitespace-nowrap">Item & Harga Dinamis</span>
@@ -248,7 +243,7 @@ function isDropdownActive($paths, $current_uri) {
 
         <!-- Submenu: Shift & Karyawan -->
         <?php 
-            $paths_shift_karyawan = ['/pos/pengaturan/shift/', '/pos/karyawan/shift/']; 
+            $paths_shift_karyawan = ['/pos/karyawan/data/', '/pos/pengaturan/shift/', '/pos/karyawan/shift/']; 
             $isActiveShiftKaryawan = isDropdownActive($paths_shift_karyawan, $current_uri);
         ?>
         <div class="mb-1">
@@ -260,6 +255,10 @@ function isDropdownActive($paths, $current_uri) {
                 <i id="icon-shift-karyawan" class="sidebar-chevron fa-solid fa-chevron-<?= $isActiveShiftKaryawan ? 'down' : 'right' ?> text-[10px] transition-transform duration-200"></i>
             </button>
             <div id="sub-shift-karyawan" class="submenu-container <?= $isActiveShiftKaryawan ? 'flex' : 'hidden' ?> flex-col gap-1 mt-1 pl-6 pr-1 border-l border-pink-100 ml-3">
+                <a href="<?= BASE_URL ?>pos/karyawan/data/" class="flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/karyawan/data/', $current_uri) ?>">
+                    <i class="fa-solid fa-users-gear text-[11px] w-4 text-center shrink-0"></i>
+                    <span>Data & Akun Karyawan</span>
+                </a>
                 <a href="<?= BASE_URL ?>pos/pengaturan/shift/" class="flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg transition-all <?= getSubNavClass('/pos/pengaturan/shift/', $current_uri) ?>">
                     <i class="fa-solid fa-clock text-[11px] w-4 text-center shrink-0"></i>
                     <span>Manajemen Shift Panel</span>

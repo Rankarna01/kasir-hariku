@@ -76,10 +76,10 @@ function dashboardApp() {
                 this.chartInstance.destroy();
             }
 
-            // Buat Gradasi Warna Biru Modern
-            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(37, 99, 235, 0.4)'); // Biru transparan
-            gradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)'); // Memudar ke bawah
+            // Buat Gradasi Warna Primary Pink Hariku (#FF3870)
+            let gradient = ctx.createLinearGradient(0, 0, 0, 360);
+            gradient.addColorStop(0, 'rgba(255, 56, 112, 0.35)'); // Pink transparan
+            gradient.addColorStop(1, 'rgba(255, 56, 112, 0.0)');  // Memudar ke bawah
 
             this.chartInstance = new Chart(ctx, {
                 type: 'line',
@@ -88,16 +88,16 @@ function dashboardApp() {
                     datasets: [{
                         label: 'Pendapatan Harian (IDR)',
                         data: chartData.values, // Nilai (Sumbu Y)
-                        borderColor: '#2563EB', // Garis Utama
+                        borderColor: '#FF3870', // Garis Utama Primary Pink
                         backgroundColor: gradient, // Isian Bawah Garis
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4, // Efek Melengkung (Smooth Curved)
                         pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#2563EB',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 7
+                        pointBorderColor: '#FF3870',
+                        pointBorderWidth: 2.5,
+                        pointRadius: 4.5,
+                        pointHoverRadius: 7.5
                     }]
                 },
                 options: {
@@ -106,11 +106,11 @@ function dashboardApp() {
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleFont: { family: 'Poppins' },
-                            bodyFont: { family: 'Poppins', weight: 'bold' },
+                            backgroundColor: '#5C2D16',
+                            titleFont: { family: 'Plus Jakarta Sans', weight: 'bold' },
+                            bodyFont: { family: 'Plus Jakarta Sans', weight: 'bold' },
                             padding: 12,
-                            cornerRadius: 8,
+                            cornerRadius: 10,
                             displayColors: false,
                             callbacks: {
                                 label: function(context) {
@@ -122,11 +122,11 @@ function dashboardApp() {
                     scales: {
                         x: { 
                             grid: { display: false },
-                            ticks: { font: { family: 'Poppins', size: 11 }, color: '#94a3b8' }
+                            ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }, color: '#94a3b8' }
                         },
                         y: { 
                             grid: { color: '#f1f5f9', borderDash: [5, 5] },
-                            ticks: { font: { family: 'Poppins', size: 11 }, color: '#94a3b8' },
+                            ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }, color: '#94a3b8' },
                             beginAtZero: true
                         }
                     }
@@ -147,8 +147,8 @@ function dashboardApp() {
                     labels: payData.labels.length ? payData.labels : ['Belum Ada'],
                     datasets: [{
                         data: payData.values.length ? payData.values : [1],
-                        backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899'],
-                        borderWidth: 2,
+                        backgroundColor: ['#FF3870', '#5C2D16', '#F59E0B', '#10B981', '#8B5CF6'],
+                        borderWidth: 2.5,
                         borderColor: '#ffffff'
                     }]
                 },
