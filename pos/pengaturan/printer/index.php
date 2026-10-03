@@ -18,6 +18,9 @@ $is_admin_owner = in_array($user_role_printer, ['admin', 'owner', 'superadmin', 
 <html lang="id">
 <head>
     <?php include '../../../components/header.php'; ?>
+    <script>
+        const BASE_URL = "<?= BASE_URL ?>";
+    </script>
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #FFC5D8; border-radius: 9999px; }
@@ -99,7 +102,6 @@ $is_admin_owner = in_array($user_role_printer, ['admin', 'owner', 'superadmin', 
                         class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2">
                     <i class="fa-solid fa-tablet-screen-button"></i> 1. Pengaturan Perangkat (Tablet)
                 </button>
-                <?php if ($is_admin_owner): ?>
                 <button @click="activeTab = 'receipt'" 
                         :class="activeTab === 'receipt' ? 'bg-[#FF3870] text-white shadow-md shadow-pink-500/20' : 'bg-white text-slate-600 hover:bg-[#FFF0F5] hover:text-[#FF3870] border border-[#FFE4EC]'"
                         class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2">
@@ -108,9 +110,8 @@ $is_admin_owner = in_array($user_role_printer, ['admin', 'owner', 'superadmin', 
                 <button @click="activeTab = 'logs'" 
                         :class="activeTab === 'logs' ? 'bg-[#FF3870] text-white shadow-md shadow-pink-500/20' : 'bg-white text-slate-600 hover:bg-[#FFF0F5] hover:text-[#FF3870] border border-[#FFE4EC]'"
                         class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2">
-                    <i class="fa-solid fa-clock-rotate-left"></i> 3. Log Cetak Admin
+                    <i class="fa-solid fa-clock-rotate-left"></i> 3. Log & Riwayat Cetak
                 </button>
-                <?php endif; ?>
             </div>
 
             <!-- ==================== TAB 1: PENGATURAN PERANGKAT (LOKAL) ==================== -->
@@ -553,6 +554,7 @@ $is_admin_owner = in_array($user_role_printer, ['admin', 'owner', 'superadmin', 
         </div>
     </div>
 
+    <script src="../../assets/rawbt_printer.js?v=<?= time() ?>"></script>
     <script src="ajax.js?v=<?= time() ?>"></script>
 </body>
 </html>

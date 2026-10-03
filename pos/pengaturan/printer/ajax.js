@@ -57,8 +57,14 @@ document.addEventListener('alpine:init', () => {
 
         // 1. LOAD & SAVE PENGATURAN PERANGKAT (localStorage)
         loadLocalDeviceSettings() {
-            this.deviceName = localStorage.getItem('pos_device_name') || (this.isAndroidDevice ? 'Tablet Android Kasir' : 'PC/Tablet Kasir');
-            this.printMode = localStorage.getItem('pos_print_mode') || (this.isAndroidDevice ? 'rawbt' : 'browser');
+            this.deviceName = localStorage.getItem('pos_device_name') || 'Tablet Kasir';
+            // Default wajib rawbt untuk printer thermal kasir (jangan fallback ke browser hanya karena non-Android)
+            let savedMode = localStorage.getItem('pos_print_mode');
+            if (!savedMode || savedMode === 'browser') {
+                savedMode = 'rawbt';
+                localStorage.setItem('pos_print_mode', 'rawbt');
+            }
+            this.printMode = savedMode;
             this.paperWidth = localStorage.getItem('pos_paper_width') || '58mm';
             this.autoPrintOnPay = localStorage.getItem('pos_auto_print_on_pay') !== '0';
             
@@ -327,13 +333,14 @@ document.addEventListener('alpine:init', () => {
             localStorage.setItem('pos_last_receipt', JSON.stringify(trx));
             this.lastReceiptInvoice = trx.invoice_no || '';
 
-            if (this.printMode === 'rawbt') {
-                return this.sendToRawBT(trx);
-            } else if (this.printMode === 'browser') {
+            if (this.printMode === 'browser') {
                 return this.fallbackBrowserPrint(trx);
+            }
+
+            if (typeof RawBtPrinter !== 'undefined') {
+                return RawBtPrinter.print(trx, { ...this.storeSettings, paperWidth: this.paperWidth });
             } else {
-                // Manual Mode: Buka Dialog Struk
-                this.fallbackBrowserPrint(trx);
+                return this.sendToRawBT(trx);
             }
         },
 
@@ -346,7 +353,7 @@ document.addEventListener('alpine:init', () => {
             // Catat log sukses terkirim ke driver
             this.logPrintToServer(trx.sale_id || null, trx.invoice_no || 'TRX-SAMPLE', 'success', `Cetak via RawBT (${this.paperWidth})`);
 
-            // Panggil RawBT Intent URL
+            // Panggil RawBT Intent URL (tanpa popup window)
             window.location.href = rawbtUrl;
 
             // Tampilkan Toast Konfirmasi 10 Detik
@@ -358,7 +365,11 @@ document.addEventListener('alpine:init', () => {
         fallbackBrowserPrint(trx) {
             const invoice = trx.invoice_no;
             this.logPrintToServer(trx.sale_id || null, invoice, 'success', 'Cetak via Browser Print');
-            window.open(`../../kasir/print_receipt.php?invoice=${invoice}`, '_blank', 'width=450,height=650');
+            let url = `../../kasir/print_receipt.php?invoice=${encodeURIComponent(invoice)}&auto_print_usb=1`;
+            if (typeof RawBtPrinter !== 'undefined' && typeof RawBtPrinter.getReceiptUrl === 'function') {
+                url = RawBtPrinter.getReceiptUrl(invoice);
+            }
+            window.open(url, '_blank', 'width=450,height=650');
             this.showPrintToast(trx);
             return true;
         },

@@ -22,6 +22,9 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
 <html lang="id">
 <head>
     <?php include '../../components/header.php'; ?>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <script>
         const BASE_URL = "<?= BASE_URL ?>";
@@ -382,19 +385,25 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                                     <template x-if="!item.is_custom && item.is_custom_price != 1">
                                         <div class="flex items-center gap-1.5">
                                             <span class="text-[11px] font-black" :class="item.is_promo_free ? 'text-emerald-600' : 'text-primary'" x-text="item.is_promo_free ? 'GRATIS PROMO' : ('Rp ' + formatRupiah(item.price))"></span>
-                                            <button x-show="!item.is_promo_free" @click="setItemDiscount(index)" class="px-1 py-0.5 rounded text-[9px] font-black transition-all border" :class="item.discount_type !== 'none' && item.discount_value > 0 ? 'bg-rose-100 text-rose-600 border-rose-200' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'">
+                                            <button type="button" x-show="!item.is_promo_free" @click="setItemDiscount(index)" class="px-1 py-0.5 rounded text-[9px] font-black transition-all border cursor-pointer hover:bg-slate-200" :class="item.discount_type !== 'none' && item.discount_value > 0 ? 'bg-rose-100 text-rose-600 border-rose-200' : 'bg-slate-100 text-slate-500 border-slate-200'">
                                                 <i class="fa-solid fa-tag text-[8px]"></i>
                                                 <span x-text="item.discount_type !== 'none' && item.discount_value > 0 ? (item.discount_type === 'percent' ? '-' + item.discount_value + '%' : '-Rp' + formatRupiah(item.discount_value)) : 'Disc'"></span>
                                             </button>
                                         </div>
                                     </template>
                                 </div>
-                                <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-md px-0.5 py-0.5">
-                                    <button @click="updateQty(index, -1)" :disabled="item.is_promo_free" class="w-5 h-5 flex items-center justify-center rounded bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold disabled:opacity-50"><i class="fa-solid fa-minus text-[9px]"></i></button>
-                                    <span class="w-5 text-center font-black text-xs" x-text="item.qty"></span>
-                                    <button @click="updateQty(index, 1)" :disabled="item.is_promo_free" class="w-5 h-5 flex items-center justify-center rounded bg-primary text-white hover:bg-primary-600 font-bold disabled:opacity-50"><i class="fa-solid fa-plus text-[9px]"></i></button>
+                                <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-1 py-0.5 shrink-0">
+                                    <button type="button" @click.prevent.stop="updateQty(index, -1)" :disabled="item.is_promo_free === true || item.qty <= 1" class="w-7 h-7 flex items-center justify-center rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-black disabled:opacity-30 cursor-pointer active:scale-90 transition-all" title="Kurangi 1">
+                                        <i class="fa-solid fa-minus text-[10px]"></i>
+                                    </button>
+                                    <input type="number" min="1" :disabled="item.is_promo_free === true" :value="item.qty" @change="setQtyDirect(index, $event.target.value)" class="w-9 text-center font-black text-xs bg-slate-50 border border-slate-200 rounded-md py-1 outline-none text-slate-800 focus:bg-white focus:border-[#FF3870] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                    <button type="button" @click.prevent.stop="updateQty(index, 1)" :disabled="item.is_promo_free === true" style="background-color: #FF3870; color: white;" class="w-7 h-7 flex items-center justify-center rounded-md font-black disabled:opacity-30 cursor-pointer active:scale-90 transition-all shadow-sm" title="Tambah 1">
+                                        <i class="fa-solid fa-plus text-[10px]"></i>
+                                    </button>
                                 </div>
-                                <button @click="removeItem(index)" class="w-6 h-6 flex items-center justify-center text-rose-400 hover:text-rose-600 bg-rose-50 rounded-md shrink-0"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+                                <button type="button" @click.prevent.stop="removeItem(index)" class="w-7 h-7 flex items-center justify-center text-rose-500 hover:text-white hover:bg-rose-500 bg-rose-50 border border-rose-100 rounded-lg shrink-0 cursor-pointer active:scale-90 transition-all" title="Hapus item">
+                                    <i class="fa-solid fa-trash-can text-[11px]"></i>
+                                </button>
                             </div>
                         </template>
                     </div>
@@ -959,7 +968,7 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
     </div>
 
     <?php include 'modal_status.php'; ?>
-    <script src="offline_db.js"></script>
+    <script src="offline_db.js?v=<?= time() ?>"></script>
     <script src="../assets/rawbt_printer.js?v=<?= time() ?>"></script>
     <script src="ajax.js?v=<?= time() ?>"></script>
 </body>

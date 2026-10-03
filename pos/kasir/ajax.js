@@ -605,37 +605,69 @@ document.addEventListener('alpine:init', () => {
                 existing.qty++; 
                 this.calcItemSubtotal(existing); 
             } else { 
-                const newItem = { id: product.id, name: product.name, price: price, qty: 1, subtotal: price, is_custom: false, is_custom_price: isCustomPrice, discount_type: 'none', discount_value: 0 };
+                const newItem = { 
+                    id: product.id, 
+                    name: product.name, 
+                    price: price, 
+                    qty: 1, 
+                    subtotal: price, 
+                    is_custom: false, 
+                    is_custom_price: isCustomPrice, 
+                    is_promo_free: false,
+                    discount_type: 'none', 
+                    discount_value: 0 
+                };
                 this.calcItemSubtotal(newItem);
                 this.cart.push(newItem); 
             }
             this.applyAutoPromos();
         },
         updateQty(index, change) {
-            if (this.cart[index].is_promo_free) return;
-            this.cart[index].qty += change;
-            if (this.cart[index].qty <= 0) {
-                this.removeItem(index);
-                return;
-            }
-            this.calcItemSubtotal(this.cart[index]);
+            const item = this.cart[index];
+            if (!item || item.is_promo_free) return;
+            let current = parseInt(item.qty, 10) || 1;
+            let next = current + change;
+            if (next < 1) next = 1;
+            
+            const updatedItem = { ...item, qty: next };
+            this.calcItemSubtotal(updatedItem);
+            this.cart.splice(index, 1, updatedItem);
+            this.applyAutoPromos();
+        },
+        setQtyDirect(index, val) {
+            const item = this.cart[index];
+            if (!item || item.is_promo_free) return;
+            let qty = parseInt(val, 10);
+            if (isNaN(qty) || qty < 1) qty = 1;
+            
+            const updatedItem = { ...item, qty: qty };
+            this.calcItemSubtotal(updatedItem);
+            this.cart.splice(index, 1, updatedItem);
             this.applyAutoPromos();
         },
         updatePrice(index) {
-            let p = parseFloat(this.cart[index].price);
+            const item = this.cart[index];
+            if (!item) return;
+            let p = parseFloat(item.price);
             if (isNaN(p) || p < 0) p = 0;
-            this.cart[index].price = p;
-            this.calcItemSubtotal(this.cart[index]);
+            
+            const updatedItem = { ...item, price: p };
+            this.calcItemSubtotal(updatedItem);
+            this.cart.splice(index, 1, updatedItem);
             this.applyAutoPromos();
         },
         removeItem(index) { 
-            this.cart.splice(index, 1); 
-            this.applyAutoPromos();
+            if (index >= 0 && index < this.cart.length) {
+                this.cart.splice(index, 1); 
+                this.applyAutoPromos();
+            }
         },
 
         calcItemSubtotal(item) {
             if (item.is_promo_free) { item.subtotal = 0; return; }
-            let gross = item.qty * item.price;
+            let qty = parseInt(item.qty || 1, 10);
+            let price = parseFloat(item.price || 0);
+            let gross = qty * price;
             let disc = 0;
             if (item.discount_type === 'percent') {
                 disc = (gross * parseFloat(item.discount_value || 0)) / 100;
@@ -648,6 +680,7 @@ document.addEventListener('alpine:init', () => {
 
         async setItemDiscount(index) {
             const item = this.cart[index];
+            if (!item) return;
             if (item.is_promo_free) {
                 Swal.fire('Info', 'Barang gratis promo tidak dapat didiskon.', 'info');
                 return;
@@ -700,16 +733,19 @@ document.addEventListener('alpine:init', () => {
                     let totalBuyQty = 0;
                     this.cart.forEach(item => {
                         if (!item.is_custom && item.id == rule.buy_product_id) {
-                            totalBuyQty += item.qty;
+                            totalBuyQty += parseInt(item.qty || 1, 10);
                         }
                     });
-                    if (totalBuyQty >= rule.buy_qty && rule.buy_qty > 0) {
-                        const multiplier = Math.floor(totalBuyQty / rule.buy_qty);
-                        const freeQty = multiplier * rule.get_qty;
+                    const buyQtyReq = parseInt(rule.buy_qty || 0, 10);
+                    const getQtyGift = parseInt(rule.get_qty || 0, 10);
+                    if (totalBuyQty >= buyQtyReq && buyQtyReq > 0) {
+                        const multiplier = Math.floor(totalBuyQty / buyQtyReq);
+                        const freeQty = multiplier * getQtyGift;
                         if (freeQty > 0) {
                             const freeProd = this.products.find(p => p.id == rule.get_product_id);
                             const prodName = freeProd ? freeProd.name : (rule.get_product_name || 'Item Gratis');
                             this.cart.push({
+                                cart_uid: 'promo_' + rule.get_product_id + '_' + Date.now(),
                                 id: rule.get_product_id,
                                 name: '[GRATIS] ' + prodName,
                                 price: 0,
@@ -730,7 +766,7 @@ document.addEventListener('alpine:init', () => {
             this.appliedAutoDisc = null;
             if (this.promosAutoDisc && this.promosAutoDisc.length > 0) {
                 for (let rule of this.promosAutoDisc) {
-                    if (rawSubtotal >= rule.min_purchase) {
+                    if (rawSubtotal >= parseFloat(rule.min_purchase || 0)) {
                         this.appliedAutoDisc = rule;
                         break;
                     }
@@ -1218,67 +1254,12 @@ document.addEventListener('alpine:init', () => {
             // Simpan sebagai struk terakhir untuk reprint
             localStorage.setItem('pos_last_receipt', JSON.stringify(trxData));
 
-            if (mode === 'rawbt' && typeof RawBtPrinter !== 'undefined') {
-                // CETAK VIA RAWBT ANDROID (LANGSUNG TANPA BUKA WINDOW BARU)
+            if (typeof RawBtPrinter !== 'undefined') {
                 RawBtPrinter.print(trxData, this.posSettings || {});
-
-                // TOAST 10 DETIK DENGAN TOMBOL "CETAK ULANG" & "STRUK TIDAK KELUAR?"
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        toast: true,
-                        position: 'bottom-end',
-                        icon: 'info',
-                        title: 'Struk Dikirim ke RawBT!',
-                        html: `
-                            <div class="text-[11px] text-slate-500 mb-2">No. ${trxData.invoice_no}</div>
-                            <div class="flex gap-2">
-                                <button id="swal-kasir-reprint" class="px-2.5 py-1 bg-[#FF3870] text-white rounded text-[11px] font-bold">Cetak Ulang</button>
-                                <button id="swal-kasir-stuck" class="px-2.5 py-1 bg-slate-200 text-slate-700 rounded text-[11px] font-bold">Struk tidak keluar?</button>
-                            </div>
-                        `,
-                        showConfirmButton: false,
-                        timer: 10000,
-                        timerProgressBar: true,
-                        didOpen: (toast) => {
-                            const btnReprint = toast.querySelector('#swal-kasir-reprint');
-                            const btnStuck = toast.querySelector('#swal-kasir-stuck');
-
-                            if (btnReprint) {
-                                btnReprint.addEventListener('click', () => {
-                                    Swal.close();
-                                    RawBtPrinter.print(trxData, this.posSettings || {});
-                                });
-                            }
-                            if (btnStuck) {
-                                btnStuck.addEventListener('click', () => {
-                                    Swal.close();
-                                    Swal.fire({
-                                        title: 'Checklist Printer Kasir',
-                                        html: `
-                                            <div class="text-left text-xs space-y-2 p-2 bg-slate-50 rounded-xl">
-                                                <p><b>1.</b> Periksa apakah printer thermal menyala (Power ON).</p>
-                                                <p><b>2.</b> Periksa apakah kertas thermal habis atau terbalik.</p>
-                                                <p><b>3.</b> Buka aplikasi <b>RawBT di tablet</b> untuk memastikan status kembali hijau.</p>
-                                            </div>
-                                        `,
-                                        showCancelButton: true,
-                                        cancelButtonText: 'Tutup',
-                                        confirmButtonText: 'Coba Cetak Ulang',
-                                        confirmButtonColor: '#FF3870'
-                                    }).then((r) => {
-                                        if (r.isConfirmed) {
-                                            RawBtPrinter.print(trxData, this.posSettings || {});
-                                        }
-                                    });
-                                });
-                            }
-                        }
-                    });
-                }
             } else {
                 // JALUR CADANGAN: BROWSER PRINT POPUP
-                let url = `print_receipt.php?invoice=${this.lastInvoice}&auto_print_usb=1`;
-                window.open(url, '_blank', 'width=400,height=600');
+                let url = `print_receipt.php?invoice=${encodeURIComponent(this.lastInvoice)}&auto_print_usb=1`;
+                window.open(url, '_blank', 'width=420,height=650');
             }
 
             this.resetCart();
