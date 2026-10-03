@@ -440,10 +440,6 @@ function isDropdownActive($paths, $current_uri) {
              <span class="sidebar-text text-xs font-bold whitespace-nowrap">Setelan Global</span>
         </a>
 
-        <a href="<?= BASE_URL ?>pos/pengaturan/printer/" title="Manajemen Printer" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/pengaturan/printer/', $current_uri) ?>">
-             <i class="fa-solid fa-print nav-icon w-5 text-center text-base shrink-0"></i> 
-             <span class="sidebar-text text-xs font-bold whitespace-nowrap">Manajemen Printer</span>
-        </a>
 
         <a href="<?= BASE_URL ?>pos/pengaturan/perangkat/" title="Perangkat Kasir" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all mb-1 <?= getNavClass('/pos/pengaturan/perangkat/', $current_uri) ?>">
              <i class="fa-solid fa-mobile-screen-button nav-icon w-5 text-center text-base shrink-0"></i> 

@@ -76,6 +76,11 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                     <i class="fa-solid fa-wifi text-rose-400"></i> Mode Offline
                 </div>
 
+                <!-- TOMBOL QUICK SETELAN PRINTER KASIR -->
+                <a href="<?= BASE_URL ?>pos/pengaturan/printer/" title="Setelan Printer Kasir" class="hidden md:flex bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3 py-1.5 rounded-xl text-xs font-black transition-all shadow-sm items-center gap-1.5">
+                    <i class="fa-solid fa-print text-amber-300"></i> Printer
+                </a>
+
                 <!-- TOMBOL DRAFT / HOLD BILL -->
                 <button @click="showDraftModal = true" x-show="!needsShiftOpen" class="hidden md:flex bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-black transition-all shadow-sm items-center gap-2 relative" x-cloak>
                     <i class="fa-solid fa-box-archive"></i> Draft
@@ -91,6 +96,10 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                     </span>
                 </button>
                 
+                <a href="<?= BASE_URL ?>pos/pengaturan/printer/" title="Setelan Printer Kasir" class="md:hidden bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3 py-2 rounded-xl text-xs font-black transition-all shadow-sm flex items-center gap-1">
+                    <i class="fa-solid fa-print text-amber-300"></i>
+                </a>
+
                 <button @click="openKasKeluarModal()" x-show="!needsShiftOpen" class="md:hidden bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-xl text-xs font-black transition-all shadow-sm flex items-center gap-2">
                     <i class="fa-solid fa-money-bill-transfer"></i>
                 </button>
@@ -951,6 +960,7 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
 
     <?php include 'modal_status.php'; ?>
     <script src="offline_db.js"></script>
+    <script src="../assets/rawbt_printer.js?v=<?= time() ?>"></script>
     <script src="ajax.js?v=<?= time() ?>"></script>
 </body>
 </html>

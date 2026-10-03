@@ -1188,40 +1188,99 @@ document.addEventListener('alpine:init', () => {
 
         triggerSmartAutoPrint() {
             if (!this.lastInvoice) return;
-            const autoMode = localStorage.getItem('pos_auto_print_mode');
-            const btActive = localStorage.getItem('pos_bt_active');
+            const autoPrintActive = localStorage.getItem('pos_auto_print_on_pay') !== '0';
+            if (!autoPrintActive) return; // Mode cetak otomatis dinonaktifkan oleh kasir
 
-            // Cek mode: default selalu ke USB Thermal Printer kecuali bluetooth aktif secara eksplisit
-            let mode = (autoMode === 'bluetooth' && btActive === '1') ? 'bluetooth' : 'usb';
-            if (mode === 'usb') localStorage.setItem('pos_auto_print_mode', 'usb');
-
-            // Tampilkan alert pintar di sudut kanan bawah (toast)
-            if (typeof Swal !== 'undefined') {
-                const usbName = localStorage.getItem('pos_usb_printer_name') || 'Thermal Printer (USB)';
-                Swal.fire({
-                    toast: true,
-                    position: 'bottom-end',
-                    icon: 'success',
-                    title: mode === 'bluetooth' ? '📶 Otomatis mencetak ke Bluetooth...' : '🖨️ Printer USB Terdeteksi & Membaca...',
-                    text: mode === 'usb' ? `Mencetak struk ke ${usbName}` : '',
-                    showConfirmButton: false,
-                    timer: 3500
-                });
-            }
-
-            this.printReceipt(true, mode);
+            const printMode = localStorage.getItem('pos_print_mode') || 'rawbt';
+            this.printReceipt(true, printMode);
         },
 
-        printReceipt(isAuto = true, mode = '') {
-            let url = `print_receipt.php?invoice=${this.lastInvoice}`;
-            if (!mode) {
-                const autoMode = localStorage.getItem('pos_auto_print_mode');
-                const btActive = localStorage.getItem('pos_bt_active');
-                mode = (autoMode === 'bluetooth' && btActive === '1') ? 'bluetooth' : 'usb';
+        printReceipt(isAuto = false, mode = '') {
+            if (!this.lastInvoice) return;
+            if (!mode) mode = localStorage.getItem('pos_print_mode') || 'rawbt';
+
+            // Siapkan payload struk lengkap
+            const trxData = {
+                sale_id: null,
+                invoice_no: this.lastInvoice,
+                date: new Date().toLocaleString('id-ID'),
+                cashier_name: (document.querySelector('.cashier-user-name')?.textContent || 'Kasir').trim(),
+                customer_name: this.selectedCustomer?.name || 'Pelanggan Umum',
+                subtotal: this.totalAmountSaved || this.totalAmount,
+                discount: (this.discountManual || 0) + (this.discountVoucher || 0),
+                total_amount: this.totalAmountSaved || this.totalAmount,
+                pay_amount: this.amountPaidSaved || this.amountPaid || this.totalAmount,
+                change_amount: this.changeAmountSaved || this.changeAmount || 0,
+                payment_method: this.paymentMethodSaved || this.paymentMethod || 'CASH',
+                items: (this.cart && this.cart.length > 0) ? [...this.cart] : []
+            };
+
+            // Simpan sebagai struk terakhir untuk reprint
+            localStorage.setItem('pos_last_receipt', JSON.stringify(trxData));
+
+            if (mode === 'rawbt' && typeof RawBtPrinter !== 'undefined') {
+                // CETAK VIA RAWBT ANDROID (LANGSUNG TANPA BUKA WINDOW BARU)
+                RawBtPrinter.print(trxData, this.posSettings || {});
+
+                // TOAST 10 DETIK DENGAN TOMBOL "CETAK ULANG" & "STRUK TIDAK KELUAR?"
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        toast: true,
+                        position: 'bottom-end',
+                        icon: 'info',
+                        title: 'Struk Dikirim ke RawBT!',
+                        html: `
+                            <div class="text-[11px] text-slate-500 mb-2">No. ${trxData.invoice_no}</div>
+                            <div class="flex gap-2">
+                                <button id="swal-kasir-reprint" class="px-2.5 py-1 bg-[#FF3870] text-white rounded text-[11px] font-bold">Cetak Ulang</button>
+                                <button id="swal-kasir-stuck" class="px-2.5 py-1 bg-slate-200 text-slate-700 rounded text-[11px] font-bold">Struk tidak keluar?</button>
+                            </div>
+                        `,
+                        showConfirmButton: false,
+                        timer: 10000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            const btnReprint = toast.querySelector('#swal-kasir-reprint');
+                            const btnStuck = toast.querySelector('#swal-kasir-stuck');
+
+                            if (btnReprint) {
+                                btnReprint.addEventListener('click', () => {
+                                    Swal.close();
+                                    RawBtPrinter.print(trxData, this.posSettings || {});
+                                });
+                            }
+                            if (btnStuck) {
+                                btnStuck.addEventListener('click', () => {
+                                    Swal.close();
+                                    Swal.fire({
+                                        title: 'Checklist Printer Kasir',
+                                        html: `
+                                            <div class="text-left text-xs space-y-2 p-2 bg-slate-50 rounded-xl">
+                                                <p><b>1.</b> Periksa apakah printer thermal menyala (Power ON).</p>
+                                                <p><b>2.</b> Periksa apakah kertas thermal habis atau terbalik.</p>
+                                                <p><b>3.</b> Buka aplikasi <b>RawBT di tablet</b> untuk memastikan status kembali hijau.</p>
+                                            </div>
+                                        `,
+                                        showCancelButton: true,
+                                        cancelButtonText: 'Tutup',
+                                        confirmButtonText: 'Coba Cetak Ulang',
+                                        confirmButtonColor: '#FF3870'
+                                    }).then((r) => {
+                                        if (r.isConfirmed) {
+                                            RawBtPrinter.print(trxData, this.posSettings || {});
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                    });
+                }
+            } else {
+                // JALUR CADANGAN: BROWSER PRINT POPUP
+                let url = `print_receipt.php?invoice=${this.lastInvoice}&auto_print_usb=1`;
+                window.open(url, '_blank', 'width=400,height=600');
             }
-            if (mode === 'bluetooth') url += `&auto_print_bt=1`;
-            else url += `&auto_print_usb=1`;
-            if(this.lastInvoice) window.open(url, '_blank', 'width=400,height=600');
+
             this.resetCart();
         },
 
