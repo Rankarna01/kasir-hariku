@@ -407,15 +407,9 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                             </div>
                         </template>
                     </div>
-                </div>
-
-                <!-- BOTTOM PANEL: flex-col agar bisa dibagi scrollable + sticky button -->
-                <!-- <div class="bg-slate-50 border-t border-slate-200 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] flex flex-col" style="max-height: 320px;"> -->
-
+                
                     <!-- AREA SCROLLABLE: Promo, Poin, Subtotal, 4 Tombol -->
-                    <div class="px-2.5 pt-1 shrink-0">
-
-
+                    <div class="pt-2 shrink-0">
                         <div x-show="selectedCustomer && loyaltyRules.is_active" class="flex items-center justify-between bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg mb-1.5">
                             <div><p class="text-[9px] font-black text-amber-600 uppercase tracking-tight">Poin: <span x-text="selectedCustomer?.points || 0"></span></p></div>
                             <button @click="togglePoints()" :disabled="(selectedCustomer?.points < loyaltyRules.points_required) && !usePoints" class="px-2 py-0.5 rounded text-[9px] font-black transition-all" :class="usePoints ? 'bg-amber-500 text-white' : 'bg-white text-amber-500 border border-amber-200 disabled:opacity-50'">
@@ -448,8 +442,9 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                             <button @click="openStatusModal('date')" class="flex flex-col items-center justify-center py-1.5 px-1 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-600 text-[9px] font-bold"><i class="fa-solid fa-list-check text-sm mb-0.5"></i> Status</button>
                             <button @click="openStatusModal('nunggak')" class="flex flex-col items-center justify-center py-1.5 px-1 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-600 text-[9px] font-bold"><i class="fa-solid fa-fire-burner text-sm mb-0.5"></i> Dapur</button>
                         </div>
-
                     </div>
+                </div> <!-- END SCROLLABLE AREA -->
+
 
                     <!-- TOMBOL CHECKOUT & DRAFT: SELALU TERLIHAT DI PALING BAWAH -->
                     <div class="px-2.5 pb-2.5 pt-1.5 shrink-0 flex gap-2">
