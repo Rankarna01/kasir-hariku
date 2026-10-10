@@ -237,8 +237,8 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
             </div>
 
             <!-- KERANJANG DI KANAN -->
-            <div class="w-full lg:w-[30%] flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden shrink-0">
-                <div class="flex p-1 bg-slate-100 border-b border-slate-200 gap-1">
+            <div class="w-full lg:w-[30%] max-h-[40vh] sm:max-h-[45vh] lg:max-h-full lg:h-full min-h-0 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden shrink-0 transition-all">
+                <div class="flex p-1 bg-slate-100 border-b border-slate-200 gap-1 shrink-0">
                     <button @click="activeTab = 'reguler'" :class="activeTab === 'reguler' ? 'bg-white shadow-sm text-primary font-black' : 'text-slate-500 hover:bg-slate-200 font-bold'" class="flex-1 py-1.5 rounded-lg text-[10px] uppercase tracking-widest transition-all"><i class="fa-solid fa-cash-register mr-1"></i> Reguler</button>
                     <button @click="activeTab = 'po'" :class="activeTab === 'po' ? 'bg-orange-100 shadow-sm text-orange-600 font-black' : 'text-slate-500 hover:bg-slate-200 font-bold'" class="flex-1 py-1.5 rounded-lg text-[10px] uppercase tracking-widest transition-all"><i class="fa-solid fa-fire-burner mr-1"></i> Pesanan Dapur</button>
                 </div>
@@ -366,9 +366,9 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                 </div>
 
                 <div class="flex-1 overflow-y-auto custom-scrollbar px-2 py-1">
-                    <div x-show="cart.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-2">
-                        <i class="fa-solid fa-basket-shopping text-4xl opacity-30"></i>
-                        <p class="font-bold text-xs">Keranjang kosong</p>
+                    <div x-show="cart.length === 0" class="py-4 sm:py-8 lg:h-full flex flex-col items-center justify-center text-slate-400 space-y-1.5">
+                        <i class="fa-solid fa-basket-shopping text-2xl sm:text-3xl opacity-30"></i>
+                        <p class="font-bold text-[11px] sm:text-xs">Keranjang kosong</p>
                     </div>
                     <div class="space-y-1">
                         <template x-for="(item, index) in cart" :key="index">
@@ -446,16 +446,17 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                 </div> <!-- END SCROLLABLE AREA -->
 
 
-                    <!-- TOMBOL CHECKOUT & DRAFT: SELALU TERLIHAT DI PALING BAWAH -->
-                    <div class="px-2.5 pb-2.5 pt-1.5 shrink-0 flex gap-2">
-                        <button @click="openSaveDraftModal()" :disabled="cart.length === 0" class="bg-amber-100 hover:bg-amber-200 text-amber-600 px-3.5 rounded-xl font-black transition-all flex items-center justify-center shadow-sm disabled:opacity-50" title="Simpan Antrean (Hold Bill)">
-                            <i class="fa-solid fa-box-archive text-lg"></i>
+                    <!-- TOMBOL CHECKOUT & DRAFT: SELALU TERLIHAT DI PALING BAWAH (RESPONSIVE TABLET & MOBILE) -->
+                    <div class="px-2.5 pb-2.5 pt-1.5 shrink-0 flex gap-2 bg-white border-t border-slate-200/80 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] sticky bottom-0 z-20">
+                        <button @click="openSaveDraftModal()" :disabled="cart.length === 0" class="bg-amber-100 hover:bg-amber-200 text-amber-700 active:scale-95 px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-xl font-black transition-all flex items-center justify-center shadow-sm disabled:opacity-40 disabled:cursor-not-allowed shrink-0" title="Simpan Antrean (Hold Bill)">
+                            <i class="fa-solid fa-box-archive text-base sm:text-lg"></i>
                         </button>
-                        <button @click="resetCart()" :disabled="cart.length === 0" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-3.5 rounded-xl font-black transition-all flex items-center justify-center shadow-sm disabled:opacity-50" title="Kosongkan Keranjang">
-                            <i class="fa-solid fa-trash-can text-lg"></i>
+                        <button @click="resetCart()" :disabled="cart.length === 0" class="bg-rose-100 hover:bg-rose-200 text-rose-600 active:scale-95 px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-xl font-black transition-all flex items-center justify-center shadow-sm disabled:opacity-40 disabled:cursor-not-allowed shrink-0" title="Kosongkan Keranjang">
+                            <i class="fa-solid fa-trash-can text-base sm:text-lg"></i>
                         </button>
-                        <button @click="processCheckout()" :disabled="cart.length === 0" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-black py-3 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 text-base disabled:opacity-50" :class="activeTab === 'po' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/30' : ''">
-                            <span x-text="activeTab === 'po' ? 'KIRIM KE DAPUR' : 'BAYAR SEKARANG'"></span> <i class="fa-solid fa-arrow-right"></i>
+                        <button @click="processCheckout()" :disabled="cart.length === 0" class="flex-1 bg-slate-800 hover:bg-slate-900 active:scale-[0.98] text-white font-black py-2.5 sm:py-3 px-3 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 text-sm sm:text-base disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer" :class="activeTab === 'po' ? '!bg-emerald-600 hover:!bg-emerald-700 shadow-emerald-500/30' : ''">
+                            <span class="truncate" x-text="activeTab === 'po' ? 'KIRIM KE DAPUR' : 'BAYAR SEKARANG'"></span>
+                            <i class="fa-solid fa-arrow-right text-xs sm:text-sm shrink-0"></i>
                         </button>
                     </div>
 
@@ -466,7 +467,7 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
         </main>
     </div>
 
-    <!-- ===== MODAL STATUS PO ===== --></div>
+    <!-- ===== MODAL STATUS PO ===== -->
 
 
     <div x-show="showCheckoutModal" class="fixed inset-0 z-[110] flex items-center justify-center" style="display: none;" x-cloak>
