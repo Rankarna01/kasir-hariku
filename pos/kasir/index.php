@@ -48,15 +48,7 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
         <header class="bg-primary text-white shadow-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-20 shrink-0">
             <div class="flex items-center gap-4">
                 <button onclick="toggleSidebar()" class="md:hidden text-white hover:bg-rose-600 p-2 rounded-lg transition-colors"><i class="fa-solid fa-bars text-xl"></i></button>
-                <div class="flex items-center gap-1.5 mr-4">
-                    <h2 class="text-xl font-black tracking-wide"><i class="fa-solid fa-cash-register mr-2"></i>Mesin Kasir</h2>
-                    <!-- SHORTCUT RAHASIA MENU RESET DATA & BACKUP (HANYA BISA DIAKSES ADMIN DENGAN SECRET TOKEN) -->
-                    <?php if (in_array(strtolower(trim($_SESSION['pos_role'] ?? '')), ['admin', 'owner', 'superadmin', 'backoffice'])): ?>
-                    <a href="<?= BASE_URL ?>pos/pengaturan/reset_data/?secret=hariku_reset_99x" target="_blank" title="Maintenance & Reset Database (Rahasia)" class="text-white/30 hover:text-white transition-opacity p-1 text-xs">
-                        <i class="fa-solid fa-user-secret"></i>
-                    </a>
-                    <?php endif; ?>
-                </div>
+                <h2 class="text-xl font-black tracking-wide mr-4"><i class="fa-solid fa-cash-register mr-2"></i>Mesin Kasir</h2>
 
                 <div x-show="!needsShiftOpen" class="hidden sm:flex bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-xs font-black items-center gap-2">
                     <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div> Kasir Aktif
