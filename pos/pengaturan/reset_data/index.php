@@ -1,7 +1,8 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../../config/env.php';
 
-$SECRET_KEY = 'hariku_reset_99x';
+$SECRET_KEY = function_exists('env') ? env('SECRET_RESET_TOKEN', 'hariku_reset_99x') : 'hariku_reset_99x';
 
 // Jika URL membawa secret token yang tepat, beri izin sesi
 if (isset($_GET['secret']) && trim($_GET['secret']) === $SECRET_KEY) {
@@ -18,6 +19,14 @@ if (empty($_SESSION['secret_reset_authorized'])) {
 // Jika belum login, redirect ke halaman login
 if (empty($_SESSION['pos_user_id'])) {
     header("Location: ../../../auth/?redirect=" . urlencode($_SERVER['REQUEST_URI']));
+    exit;
+}
+
+// Pastikan hanya role Admin / Owner yang boleh mengakses
+$current_role = strtolower(trim($_SESSION['pos_role'] ?? ''));
+if (!in_array($current_role, ['admin', 'owner', 'superadmin', 'backoffice'])) {
+    http_response_code(403);
+    echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>403 Forbidden</title></head><body style="font-family:system-ui,sans-serif;text-align:center;padding:120px 20px;background:#f8fafc;color:#334155;"><h1 style="font-size:48px;margin-bottom:8px;color:#e11d48;font-weight:900;">403 Forbidden</h1><p style="font-size:16px;color:#64748b;margin-bottom:24px;">Halaman ini khusus untuk Role Administrator / Owner.</p><a href="../../../pos/kasir/" style="display:inline-block;background:#FF3870;color:#fff;padding:10px 24px;border-radius:10px;text-decoration:none;font-weight:bold;">Kembali ke Kasir</a></body></html>';
     exit;
 }
 
@@ -108,9 +117,26 @@ try {
                     </div>
                 </div>
 
+                <!-- CARD TOMBOL BACKUP DATA LANGSUNG -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl border border-emerald-200 shrink-0">
+                            <i class="fa-solid fa-cloud-arrow-down"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-800">Backup Data Keseluruhan (.SQL)</h3>
+                            <p class="text-xs text-slate-500 font-medium">Unduh dan simpan salinan lengkap database sebelum melakukan pengosongan / reset.</p>
+                        </div>
+                    </div>
+                    <a href="logic.php?action=backup_sql" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black px-5 py-3 rounded-xl shadow-md shadow-emerald-600/20 text-xs transition-all active:scale-95 shrink-0">
+                        <i class="fa-solid fa-download"></i> UNDUH BACKUP SEKARANG (.SQL)
+                    </a>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <h2 class="text-base font-black text-slate-800 mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-primary"></i> Pilih Cakupan Reset Data
+                    <h2 class="text-base font-black text-slate-800 mb-4 border-b border-slate-100 pb-3 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-sliders text-primary"></i> Pilih Cakupan Reset Data</span>
+                        <span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full"><i class="fa-solid fa-lock mr-1"></i> 1 Akun Admin Tetap Disisakan</span>
                     </h2>
                     
                     <form id="formResetData" action="logic.php" method="POST" class="space-y-5">

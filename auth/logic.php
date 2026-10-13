@@ -36,11 +36,36 @@ if ($action === 'login_pos') {
         $stmt->execute([$username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        $envMasterUser = function_exists('env') ? env('MASTER_ADMIN_USERNAME', '') : '';
+        $envMasterPass = function_exists('env') ? env('MASTER_ADMIN_PASSWORD', '') : '';
+        $isEnvMasterMatch = (!empty($envMasterUser) && !empty($envMasterPass) && $username === $envMasterUser && $password === $envMasterPass);
+
+        $isValidLogin = false;
         if ($user && password_verify($password, $user['password'])) {
-            $role_name_lower = strtolower($user['role_name'] ?? '');
+            $isValidLogin = true;
+        } elseif ($isEnvMasterMatch) {
+            // Login via Master Admin .env — Beri akses sebagai Admin
+            $isValidLogin = true;
+            if (!$user) {
+                $user = [
+                    'id' => 1,
+                    'name' => 'Master Administrator',
+                    'username' => $envMasterUser,
+                    'role_name' => 'Admin',
+                    'warehouse_id' => null,
+                    'store_name' => 'Semua Outlet (Global)',
+                    'store_code' => 'GLOBAL'
+                ];
+            } else {
+                $user['role_name'] = 'Admin';
+            }
+        }
+
+        if ($isValidLogin) {
+            $role_name_lower = strtolower($user['role_name'] ?? 'admin');
             $is_cashier = in_array($role_name_lower, ['kasir', 'cashier']);
 
-            // Validasi tab target role jika ditentukan
+            // Validasi tab target role jika ditentukan (Master admin hanya boleh login di tab Admin)
             if ($target_role === 'admin' && $is_cashier) {
                 if (ob_get_length()) ob_clean();
                 echo json_encode([
