@@ -1286,12 +1286,14 @@ document.addEventListener('alpine:init', () => {
             if (this.cart.length === 0) { Swal.fire('Perhatian', 'Keranjang kosong tidak dapat disimpan!', 'warning'); return; }
             this.draftCustomerName = this.selectedCustomerId ? (this.customers.find(c => c.id == this.selectedCustomerId)?.name || '') : '';
             this.draftNotes = this.orderNotes || '';
-            this.showSaveDraftModal = true;
+            this.confirmSaveDraft();
         },
         confirmSaveDraft() {
             const draft = {
                 id: 'draft_' + Date.now(),
+                reference_name: this.draftReferenceName.trim(),
                 timestamp: new Date().toISOString(),
+                totalAmount: this.totalAmount,
                 tab: this.activeTab,
                 cart: JSON.parse(JSON.stringify(this.cart)),
                 customerId: this.selectedCustomerId,
