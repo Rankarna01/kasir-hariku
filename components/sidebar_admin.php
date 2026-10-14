@@ -490,7 +490,7 @@ function isDropdownActive($paths, $current_uri) {
     </nav>
 </aside>
 
-<div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-[60] hidden md:hidden backdrop-blur-sm transition-opacity opacity-0 duration-300"></div>
+<div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-20 hidden md:hidden backdrop-blur-sm transition-opacity opacity-0 duration-300"></div>
 
 <script>
     // ===== INIT SIDEBAR STATE FROM LOCALSTORAGE =====
