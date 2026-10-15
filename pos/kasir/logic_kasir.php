@@ -67,10 +67,8 @@ if ($action === 'check_shift') {
 }
 
 if ($action === 'open_shift') {
-    $stmt_set = $pdo->prepare("SELECT setting_value FROM pos_settings WHERE setting_key = 'default_start_cash'");
-    $stmt_set->execute();
-    $setting = $stmt_set->fetch(PDO::FETCH_ASSOC);
-    $start_cash = isset($_POST['start_cash']) ? floatval($_POST['start_cash']) : ($setting ? (float)$setting['setting_value'] : 0);
+    // Buka kasir tanpa input modal: modal awal selalu 0
+    $start_cash = 0;
     $warehouse_id = !empty($_SESSION['pos_warehouse_id']) ? intval($_SESSION['pos_warehouse_id']) : 1;
 
     $shift_id = intval($_POST['shift_id'] ?? 0);
@@ -114,12 +112,25 @@ if ($action === 'open_shift') {
 }
 
 if ($action === 'close_shift') {
-    $end_cash = floatval($_POST['end_cash'] ?? 0);
-    // Get current open shift id
-    $stmtGet = $pdo->prepare("SELECT id FROM shifts_history_pos WHERE user_id = ? AND status = 'open' ORDER BY id DESC LIMIT 1");
+    // Ambil shift yang sedang buka
+    $stmtGet = $pdo->prepare("SELECT id, start_time FROM shifts_history_pos WHERE user_id = ? AND status = 'open' ORDER BY id DESC LIMIT 1");
     $stmtGet->execute([$user_id]);
     $open_shift = $stmtGet->fetch(PDO::FETCH_ASSOC);
     $shift_id = $open_shift ? $open_shift['id'] : 0;
+
+    // Total tunai shift ini dihitung dari data, tanpa input kasir (penjualan tunai - pembatalan tunai)
+    $end_cash = 0;
+    if ($open_shift) {
+        $stmtTunai = $pdo->prepare("
+            SELECT
+                (SELECT COALESCE(SUM(sp.amount), 0) FROM sale_payments_pos sp
+                  WHERE sp.created_at >= ? AND UPPER(sp.payment_method) = 'CASH')
+              - (SELECT COALESCE(SUM(sc.amount), 0) FROM sale_cancellations_pos sc
+                  WHERE sc.created_at >= ? AND sc.is_cash_deducted = 1)
+        ");
+        $stmtTunai->execute([$open_shift['start_time'], $open_shift['start_time']]);
+        $end_cash = (float)$stmtTunai->fetchColumn();
+    }
 
     $stmt = $pdo->prepare("UPDATE shifts_history_pos SET status = 'closed', end_time = NOW(), end_cash = ? WHERE user_id = ? AND status = 'open'");
     $stmt->execute([$end_cash, $user_id]);
@@ -487,7 +498,14 @@ if ($action === 'checkout') {
     if (!empty($data['voucher_code'])) { $pdo->prepare("UPDATE vouchers_pos SET used_count = used_count + 1 WHERE voucher_code = ?")->execute([$data['voucher_code']]); }
     if ($customer_id) { $pdo->prepare("UPDATE customers_pos SET points = points - ? + ? WHERE id = ?")->execute([$data['points_used'], $data['points_earned'], $customer_id]); }
 
-    $pdo->commit(); echo json_encode(['status' => 'success', 'invoice' => $invoice_no]); exit;
+    $pdo->commit();
+
+    // Waktu transaksi dari server (sama dengan laporan & print_receipt.php) agar struk tidak tergantung jam tablet
+    $stmtSaleTime = $pdo->prepare("SELECT created_at FROM sales_pos WHERE invoice_no = ? LIMIT 1");
+    $stmtSaleTime->execute([$invoice_no]);
+    $saleCreatedAt = $stmtSaleTime->fetchColumn();
+
+    echo json_encode(['status' => 'success', 'invoice' => $invoice_no, 'sale_time' => $saleCreatedAt ? date('d/m/Y H:i', strtotime($saleCreatedAt)) : null]); exit;
 }
 
 // --- FUNGSI STATUS PO ---

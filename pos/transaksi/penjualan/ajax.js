@@ -124,8 +124,13 @@ document.addEventListener('alpine:init', () => {
 
         printReceipt(invoice) {
             if (!invoice) return;
-            const printUrl = `../../kasir/print_receipt.php?invoice=${invoice}&auto_print_usb=1`;
-            window.open(printUrl, '_blank', 'width=400,height=600');
+            RawBtPrinter.reprintInvoice(invoice);
+        },
+
+        // Cetak manual: buka halaman struk, pilih cara cetak sendiri
+        printReceiptManual(invoice) {
+            if (!invoice) return;
+            window.open(`../../kasir/print_receipt.php?invoice=${encodeURIComponent(invoice)}`, '_blank', 'width=400,height=600');
         },
 
         formatDate(dateString) {

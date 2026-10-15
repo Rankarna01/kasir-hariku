@@ -132,7 +132,7 @@ document.addEventListener('alpine:init', () => {
                             confirmButtonColor: '#2563EB'
                         }).then((swalResult) => {
                             if (swalResult.isConfirmed) {
-                                window.open(`../../kasir/print_receipt.php?invoice=${this.activeTrx.invoice_no}`, '_blank', 'width=400,height=600');
+                                RawBtPrinter.reprintInvoice(this.activeTrx.invoice_no);
                             }
                         });
                     }

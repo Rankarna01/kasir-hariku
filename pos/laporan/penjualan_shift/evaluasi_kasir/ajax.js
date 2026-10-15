@@ -63,7 +63,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         printShift(shiftId) {
-            window.open(`../../../kasir/print_shift.php?id=${shiftId}`, 'PrintShift', 'width=400,height=600');
+            RawBtPrinter.reprintShift(shiftId);
         },
 
         formatRupiah(angka) { 

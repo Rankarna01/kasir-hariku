@@ -122,7 +122,7 @@ document.addEventListener('alpine:init', () => {
 
         // --- MODAL STATUS & SUCCESS ---
         showStatusModal: false, isFetchingStatus: false, activeOrders: [],
-        showSuccessModal: false, lastInvoice: '', totalAmountSaved: 0, paymentStatusSaved: '', dpAmountSaved: 0, amountPaidSaved: 0, changeAmountSaved: 0, paymentMethodSaved: '',
+        showSuccessModal: false, lastInvoice: '', lastSaleTime: '', totalAmountSaved: 0, paymentStatusSaved: '', dpAmountSaved: 0, amountPaidSaved: 0, changeAmountSaved: 0, paymentMethodSaved: '',
 
         // --- DRAFT / HOLD BILL ---
         drafts: [], showDraftModal: false, showSaveDraftModal: false, draftReferenceName: '',
@@ -331,20 +331,19 @@ document.addEventListener('alpine:init', () => {
         async closeShift() {
             this.isLoadingShift = true;
             try {
-                const endCashVal = typeof this.closeShiftCash === 'number' ? this.closeShiftCash : (parseInt(String(this.closeShiftCash).replace(/[^0-9]/g, ''), 10) || 0);
-                const fd = new FormData(); 
-                fd.append('end_cash', endCashVal);
+                // Tanpa input nominal: total tunai dihitung server dari data transaksi
+                const fd = new FormData();
                 // ARAHKAN KE logic_kasir.php
                 const res = await fetch('logic_kasir.php?action=close_shift', { method: 'POST', body: fd });
                 const rawText = await res.text(); // X-RAY ERROR HANDLER
                 try {
                     const result = JSON.parse(rawText);
                     if (result.status === 'success') {
-                        Swal.fire('Tutup Kasir Sukses', result.message, 'success').then(() => { 
+                        Swal.fire('Tutup Kasir Sukses', result.message, 'success').then(async () => {
                             if (result.shift_id) {
-                                window.open(`print_shift.php?id=${result.shift_id}`, '_blank', 'width=400,height=600');
+                                await RawBtPrinter.reprintShift(result.shift_id);
                             }
-                            setTimeout(() => { window.location.reload(); }, 500);
+                            setTimeout(() => { window.location.reload(); }, 2500);
                         });
                     } else { Swal.fire('Gagal', result.message, 'error'); }
                 } catch(err) { 
@@ -1172,7 +1171,7 @@ document.addEventListener('alpine:init', () => {
                 if (!response.ok) throw new Error("Server Error");
                 const result = await response.json();
                 if (result.status === 'success') {
-                    this.lastInvoice = result.invoice; this.totalAmountSaved = this.totalAmount; this.paymentStatusSaved = this.paymentStatus;
+                    this.lastInvoice = result.invoice; this.lastSaleTime = result.sale_time || ''; this.totalAmountSaved = this.totalAmount; this.paymentStatusSaved = this.paymentStatus;
                     this.dpAmountSaved = this.dpAmount; this.amountPaidSaved = this.amountPaid; this.changeAmountSaved = this.changeAmount; this.paymentMethodSaved = this.paymentMethod;
                     this.showSuccessModal = true;
                     this.triggerSmartAutoPrint();
@@ -1181,7 +1180,7 @@ document.addEventListener('alpine:init', () => {
                 // Mode Offline: Simpan ke IndexedDB
                 console.warn("Koneksi offline, menyimpan transaksi ke memori lokal...");
                 const offlineId = await idbPos.saveOfflineTransaction(payload);
-                this.lastInvoice = offlineId; this.totalAmountSaved = this.totalAmount; this.paymentStatusSaved = this.paymentStatus;
+                this.lastInvoice = offlineId; this.lastSaleTime = '';this.totalAmountSaved = this.totalAmount; this.paymentStatusSaved = this.paymentStatus;
                 this.dpAmountSaved = this.dpAmount; this.amountPaidSaved = this.amountPaid; this.changeAmountSaved = this.changeAmount; this.paymentMethodSaved = this.paymentMethod;
                 this.showSuccessModal = true;
                 this.triggerSmartAutoPrint();
@@ -1239,7 +1238,7 @@ document.addEventListener('alpine:init', () => {
             const trxData = {
                 sale_id: null,
                 invoice_no: this.lastInvoice,
-                date: new Date().toLocaleString('id-ID'),
+                date: this.lastSaleTime || new Date().toLocaleString('id-ID'),
                 cashier_name: (document.querySelector('.cashier-user-name')?.textContent || 'Kasir').trim(),
                 customer_name: this.selectedCustomer?.name || 'Pelanggan Umum',
                 subtotal: this.totalAmountSaved || this.totalAmount,

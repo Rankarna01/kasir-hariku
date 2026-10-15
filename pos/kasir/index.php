@@ -40,6 +40,8 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
     </style>
 </head>
 <body class="bg-slate-100 flex h-screen overflow-hidden text-slate-800 antialiased font-sans" x-data="posApp()" x-cloak>
+    <!-- Nama kasir yang login, dipakai untuk struk cetak -->
+    <span class="cashier-user-name hidden"><?= htmlspecialchars($_SESSION['pos_name'] ?? $_SESSION['pos_username'] ?? 'Kasir') ?></span>
 
     <?php include '../../components/sidebar.php'; ?>
 
@@ -165,27 +167,6 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
                                     </template>
                                 </div>
                             </template>
-                        </div>
-                    </div>
-
-                    <!-- Modal Awal Kas -->
-                    <div>
-                        <label class="block text-xs font-black text-slate-600 uppercase tracking-wider mb-1.5">
-                            <i class="fa-solid fa-money-bill-wave mr-1 text-emerald-600"></i> Modal Awal di Laci Kas (Cash)
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-sm">Rp</span>
-                            <input type="text"
-                                :value="startCashFormatted"
-                                @input="updateKasirCashInput($event.target.value)"
-                                class="w-full pl-12 pr-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none focus:border-primary focus:bg-white font-black text-slate-800 text-sm"
-                                placeholder="0">
-                        </div>
-                        <div class="flex flex-wrap gap-1.5 mt-2">
-                            <button type="button" @click="setKasirCashQuick(0)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-primary-50 hover:text-primary hover:border-primary/40 text-slate-600 transition-colors border border-transparent">Rp 0</button>
-                            <button type="button" @click="setKasirCashQuick(100000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-primary-50 hover:text-primary hover:border-primary/40 text-slate-600 transition-colors border border-transparent">Rp 100.000</button>
-                            <button type="button" @click="setKasirCashQuick(200000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-primary-50 hover:text-primary hover:border-primary/40 text-slate-600 transition-colors border border-transparent">Rp 200.000</button>
-                            <button type="button" @click="setKasirCashQuick(500000)" class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-primary-50 hover:text-primary hover:border-primary/40 text-slate-600 transition-colors border border-transparent">Rp 500.000</button>
                         </div>
                     </div>
 
@@ -616,18 +597,8 @@ if(!$toko) { $toko = ['store_name' => 'AYAM GORENG HARIKU', 'store_address' => '
         <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl relative z-10 p-6 m-4 text-center border border-slate-200">
             <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-3"><i class="fa-solid fa-lock"></i></div>
             <h3 class="font-black text-xl text-slate-800 mb-2">Akhiri Shift Kasir?</h3>
-            <p class="text-xs font-bold text-slate-500 mb-4">Pastikan Anda telah menghitung uang fisik di laci dengan benar sebelum menutup shift.</p>
+            <p class="text-xs font-bold text-slate-500 mb-6">Shift akan ditutup dan total pendapatan shift ini akan dicetak.</p>
             <form @submit.prevent="closeShift()">
-                <label class="block text-[10px] text-left font-black text-slate-400 uppercase tracking-widest mb-1.5">Total Uang Cash Real di Laci (Rp)</label>
-                <div class="relative mb-6">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400">Rp</span>
-                    <input type="text" 
-                        :value="closeShiftCashFormatted" 
-                        @input="updateCloseShiftCashInput($event.target.value)" 
-                        required 
-                        class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-3 font-black text-xl outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500" 
-                        placeholder="0">
-                </div>
                 <div class="grid grid-cols-2 gap-3">
                     <button type="button" @click="showCloseShiftModal = false" class="py-3.5 rounded-xl font-black text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">Batal</button>
                     <button type="submit" :disabled="isLoadingShift" class="py-3.5 rounded-xl font-black text-white bg-rose-500 hover:bg-rose-600 shadow-md shadow-rose-500/30 transition-all flex justify-center items-center gap-2">

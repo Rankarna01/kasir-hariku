@@ -60,6 +60,9 @@ const RawBtPrinter = {
         if (showCashier && trx.cashier_name) {
             text += 'Kasir   : ' + trx.cashier_name + '\n';
         }
+        if (trx.payment_method) {
+            text += 'Metode  : ' + String(trx.payment_method).toUpperCase() + '\n';
+        }
         if (trx.customer_name && trx.customer_name !== 'Pelanggan Umum') {
             text += 'Pelanggan: ' + trx.customer_name + '\n';
         }
@@ -126,6 +129,210 @@ const RawBtPrinter = {
         text += '\n\n\n\n' + CMD_CUT;
 
         return text;
+    },
+
+    // 2b. Ubah hasil buildEscPos menjadi baris preview (rata kiri/tengah/kanan, tebal, double, wrap seperti printer)
+    toPreviewLines(escText, maxCols = 32) {
+        const lines = [];
+        let current = null;
+        let align = 'left', bold = false, dbl = false;
+
+        const endLine = () => {
+            if (current) lines.push(current);
+            current = null;
+        };
+
+        for (let i = 0; i < escText.length; i++) {
+            const ch = escText[i];
+            const next = escText[i + 1];
+            const arg = escText.charCodeAt(i + 2);
+
+            if (ch === '\x1B' && next === '@') { align = 'left'; bold = false; dbl = false; i += 1; continue; }
+            if (ch === '\x1B' && next === 'a') { align = arg === 1 ? 'center' : (arg === 2 ? 'right' : 'left'); i += 2; continue; }
+            if (ch === '\x1B' && next === 'E') { bold = arg === 1; i += 2; continue; }
+            if (ch === '\x1D' && next === '!') { dbl = (arg & 0x11) !== 0; i += 2; continue; }
+            if (ch === '\x1D' && next === 'V') { endLine(); break; } // potong kertas = akhir struk
+            if (ch === '\x1B' || ch === '\x1D') { i += 1; continue; }
+
+            if (ch === '\n') {
+                if (current) endLine();
+                else lines.push({ text: '', align, bold, dbl });
+                continue;
+            }
+            if (!current) current = { text: '', align, bold, dbl };
+            current.text += ch;
+        }
+        endLine();
+
+        // Teks double-width dipotong per karakter (seperti printer), teks biasa dipotong per kata
+        const result = [];
+        lines.forEach(line => {
+            const width = line.dbl ? Math.floor(maxCols / 2) : maxCols;
+            this.wrapPreviewText(line.text, width, line.dbl).forEach(part => {
+                result.push({ ...line, text: part });
+            });
+        });
+        return result;
+    },
+
+    wrapPreviewText(text, width, hardWrap = false) {
+        if (text.length <= width) return [text];
+        const parts = [];
+        let rest = text;
+        while (rest.length > width) {
+            let cut = hardWrap ? -1 : rest.lastIndexOf(' ', width);
+            if (cut <= 0) cut = width;
+            parts.push(rest.slice(0, cut).trimEnd());
+            rest = rest.slice(cut).trimStart();
+        }
+        parts.push(rest);
+        return parts;
+    },
+
+    // 2c. Laporan Tutup Kasir (format sama dengan print_shift.php: modal, tunai, non-tunai, total pendapatan)
+    buildShiftEscPos(r, options = {}) {
+        const paperWidth = options.paperWidth || localStorage.getItem('pos_paper_width') || '58mm';
+        const maxCols = paperWidth === '80mm' ? 48 : 32;
+        const divider = '-'.repeat(maxCols);
+
+        const ESC = '\x1B';
+        const GS = '\x1D';
+        const CMD_INIT = ESC + '@';
+        const CMD_ALIGN_LEFT = ESC + 'a\x00';
+        const CMD_ALIGN_CENTER = ESC + 'a\x01';
+        const CMD_BOLD_ON = ESC + 'E\x01';
+        const CMD_BOLD_OFF = ESC + 'E\x00';
+        const CMD_CUT = GS + 'V\x41\x00';
+
+        const fmt = n => Number(n || 0).toLocaleString('id-ID');
+        const row = (label, value, bold = false) => {
+            const l = String(label);
+            const v = String(value);
+            const spaces = Math.max(1, maxCols - l.length - v.length);
+            return (bold ? CMD_BOLD_ON : '') + l + ' '.repeat(spaces) + v + (bold ? CMD_BOLD_OFF : '') + '\n';
+        };
+
+        let t = CMD_INIT + CMD_ALIGN_CENTER + CMD_BOLD_ON + (r.store_name || 'AYAM GORENG HARIKU') + '\n' + CMD_BOLD_OFF;
+        t += 'LAPORAN TUTUP KASIR\n' + CMD_ALIGN_LEFT;
+        t += divider + '\n';
+        t += row('Dicetak', r.printed);
+        t += row('Kasir', r.cashier);
+        t += row('Buka', r.start);
+        t += row('Tutup', r.end);
+        t += row('Jumlah transaksi', r.transactions);
+        t += divider + '\n';
+        t += row('Modal Awal', fmt(r.modal_awal));
+        t += row('Tunai', fmt(r.tunai));
+        (r.non_tunai || []).forEach(nt => {
+            t += row(nt.method, fmt(nt.netto));
+        });
+        t += divider + '\n';
+        t += row('Total Pendapatan', 'Rp ' + fmt(r.total_pendapatan), true);
+        t += '\n\n\n\n' + CMD_CUT;
+        return t;
+    },
+
+    // Kirim teks ESC/POS ke RawBT (Android: intent, non-Android: rawbt: URI)
+    sendRawText(rawText, log = {}) {
+        const deviceName = localStorage.getItem('pos_device_name') || 'Tablet Kasir';
+        const base64 = this.toBase64(rawText);
+        this.logPrint(null, log.invoice_no || 'LAPORAN', deviceName, 'rawbt', 'success', log.note || 'Cetak via RawBT');
+        if (this.isAndroid()) {
+            window.location.href = this.getIntentUrl(base64);
+        } else {
+            window.location.href = `rawbt:base64,${base64}`;
+        }
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true,
+                position: 'bottom-end',
+                icon: 'info',
+                title: 'Data cetak dikirim ke RawBT',
+                text: this.isAndroid() ? '' : 'RawBT hanya berjalan di tablet/HP Android. Di komputer, struk tidak akan tercetak.',
+                showConfirmButton: false,
+                timer: 4000
+            });
+        }
+        return true;
+    },
+
+    printShift(report, options = {}) {
+        if (localStorage.getItem('pos_print_mode') === 'browser') {
+            window.open(this.posUrl('kasir/print_shift.php?id=' + encodeURIComponent(report.shift_id)), '_blank');
+            return false;
+        }
+        const text = this.buildShiftEscPos(report, options);
+        return this.sendRawText(text, {
+            invoice_no: 'TUTUP-KASIR-' + report.shift_id,
+            note: 'Cetak laporan tutup kasir via RawBT'
+        });
+    },
+
+    // Ambil laporan tutup kasir dari server lalu cetak via RawBT
+    async reprintShift(shiftId) {
+        try {
+            const res = await fetch(this.posUrl('kasir/print_shift.php?format=json&id=' + encodeURIComponent(shiftId)));
+            const result = await res.json();
+            if (result.status !== 'success') throw new Error(result.message || 'Laporan tidak ditemukan');
+            return this.printShift(result.data);
+        } catch (e) {
+            this.showReprintError('Gagal mencetak laporan tutup kasir: ' + e.message);
+            return false;
+        }
+    },
+
+    // Ambil data transaksi dari database lalu cetak ulang via RawBT
+    async reprintInvoice(invoice) {
+        try {
+            const res = await fetch(this.posUrl('pengaturan/printer/logic.php?action=get_receipt_data&invoice=' + encodeURIComponent(invoice)));
+            const result = await res.json();
+            if (result.status !== 'success') throw new Error(result.message || 'Transaksi tidak ditemukan');
+            return this.print(this.mapSaleToTrx(result.data), { ...(result.data.store || {}) });
+        } catch (e) {
+            this.showReprintError('Gagal cetak ulang struk: ' + e.message);
+            return false;
+        }
+    },
+
+    // Ubah data sales_pos (get_receipt_data) ke bentuk trx yang dipakai buildEscPos
+    mapSaleToTrx(data) {
+        const s = data.sale;
+        const num = v => Number(v || 0);
+        return {
+            sale_id: s.id,
+            invoice_no: s.invoice_no,
+            date: new Date(String(s.created_at).replace(' ', 'T')).toLocaleString('id-ID'),
+            cashier_name: s.cashier_name || 'Kasir',
+            customer_name: s.customer_name || 'Pelanggan Umum',
+            subtotal: num(s.subtotal),
+            discount: num(s.discount_voucher) + num(s.discount_points) + num(s.discount_manual) + num(s.discount_auto),
+            total_amount: num(s.total_amount),
+            pay_amount: num(s.amount_paid),
+            change_amount: num(s.change_amount),
+            payment_method: s.payment_method || 'CASH',
+            notes: s.notes || '',
+            items: (data.items || []).map(i => ({
+                name: i.product_name,
+                qty: num(i.qty),
+                price: num(i.price),
+                subtotal: num(i.subtotal)
+            }))
+        };
+    },
+
+    // URL halaman di dalam folder /pos/ (aman dari sub-folder mana pun)
+    posUrl(path) {
+        const idx = window.location.pathname.indexOf('/pos/');
+        const base = idx !== -1 ? window.location.pathname.substring(0, idx) : '';
+        return window.location.origin + base + '/pos/' + path.replace(/^\/+/, '');
+    },
+
+    showReprintError(message) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire('Gagal Cetak', message, 'error');
+        } else {
+            alert(message);
+        }
     },
 
     // 3. Base64 UTF-8 Converter

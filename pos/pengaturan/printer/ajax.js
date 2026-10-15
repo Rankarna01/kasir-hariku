@@ -12,6 +12,12 @@ document.addEventListener('alpine:init', () => {
         lastTestStatus: '',
         lastReceiptInvoice: '',
 
+        // 1b. STATE PREVIEW STRUK (null = pakai data contoh)
+        previewTrx: null,
+        previewSource: '',
+        previewInvoice: '',
+        previewLoading: false,
+
         // 2. STATE PENGATURAN STRUK (Database)
         storeSettings: {
             store_name: 'AYAM GORENG HARIKU',
@@ -39,12 +45,13 @@ document.addEventListener('alpine:init', () => {
         isTesting: false,
         showRawbtModal: false,
         showTroubleshootModal: false,
-        activeTab: 'printer', // 'printer' | 'receipt' | 'logs'
+        activeTab: 'printer', // 'printer' | 'receipt' | 'preview' | 'logs'
         isAndroidDevice: false,
 
         async init() {
             this.detectEnvironment();
             this.loadLocalDeviceSettings();
+            this.loadPreviewLast();
             await this.loadStoreSettings();
             await this.loadPrintLogs();
         },
@@ -480,6 +487,110 @@ document.addEventListener('alpine:init', () => {
                 text: 'Kendala struk tidak keluar telah dicatat di Log Cetak Admin untuk ditindaklanjuti.',
                 confirmButtonColor: '#FF3870'
             });
+        },
+
+        // 11. PREVIEW STRUK (memakai RawBtPrinter agar hasil preview sama dengan hasil cetak)
+        get previewMaxCols() {
+            return this.paperWidth === '80mm' ? 48 : 32;
+        },
+
+        // Lebar kertas di layar: 58mm = 290px, 80mm = 400px (5px per mm). Font menyesuaikan agar kolom pas dengan jumlah karakter
+        get previewPaperPx() {
+            return (this.paperWidth === '80mm' ? 80 : 58) * 5;
+        },
+
+        get previewPaperStyle() {
+            // content-box agar padding tidak memotong lebar kolom teks
+            return 'box-sizing:content-box;width:' + this.previewPaperPx + 'px;';
+        },
+
+        get previewFontPx() {
+            return this.previewPaperPx / (this.previewMaxCols * 0.6);
+        },
+
+        get previewLines() {
+            if (typeof RawBtPrinter === 'undefined') return [];
+            const trx = this.previewTrx || this.getSampleTrx();
+            const raw = RawBtPrinter.buildEscPos(trx, { ...this.storeSettings, paperWidth: this.paperWidth });
+            return RawBtPrinter.toPreviewLines(raw, this.previewMaxCols).map(line => ({
+                ...line,
+                // Baris "-----" / "=====" ditampilkan sebagai garis penuh, bukan teks
+                divider: /^-+$/.test(line.text) ? 'single' : (/^=+$/.test(line.text) ? 'double' : '')
+            }));
+        },
+
+        // Style per baris (font & spasi ditaruh di tiap baris agar tidak bergantung pada pewarisan)
+        previewLineStyle(line) {
+            if (line.divider) {
+                return 'border-top:' + (line.divider === 'double' ? 2 : 1) + 'px dashed #000;margin:5px 0;';
+            }
+            const fontPx = this.previewFontPx;
+            let style = "font-family:'Courier New',Courier,monospace;white-space:pre;line-height:1.3;"
+                + 'font-size:' + fontPx.toFixed(2) + 'px;'
+                + 'font-weight:' + (line.bold ? 900 : 700) + ';'
+                + 'text-align:' + line.align + ';';
+            if (line.dbl) style += 'font-size:' + (fontPx * 2).toFixed(2) + 'px;line-height:1.1;';
+            return style;
+        },
+
+        getSampleTrx() {
+            return {
+                invoice_no: 'CONTOH-0001',
+                date: new Date().toLocaleString('id-ID'),
+                cashier_name: 'Staf Kasir',
+                customer_name: 'Pelanggan Contoh',
+                subtotal: 35000,
+                discount: 5000,
+                total_amount: 30000,
+                pay_amount: 50000,
+                change_amount: 20000,
+                payment_method: 'CASH',
+                items: [
+                    { name: 'Ayam Goreng Paha Crispy', qty: 1, price: 20000, subtotal: 20000 },
+                    { name: 'Nasi Putih Hariku', qty: 1, price: 7000, subtotal: 7000 },
+                    { name: 'Es Teh Manis Jumbo', qty: 1, price: 8000, subtotal: 8000 }
+                ]
+            };
+        },
+
+        loadPreviewLast() {
+            const lastStr = localStorage.getItem('pos_last_receipt');
+            try {
+                this.previewTrx = lastStr ? JSON.parse(lastStr) : null;
+            } catch(e) {
+                this.previewTrx = null;
+            }
+            this.previewSource = this.previewTrx
+                ? 'Struk terakhir di perangkat ini (' + (this.previewTrx.invoice_no || '-') + ')'
+                : 'Belum ada struk terakhir, menampilkan data contoh';
+        },
+
+        loadPreviewSample() {
+            this.previewTrx = null;
+            this.previewSource = 'Data contoh';
+        },
+
+        async loadPreviewByInvoice() {
+            const invoice = this.previewInvoice.trim();
+            if (!invoice) {
+                Swal.fire('Perhatian', 'Masukkan nomor invoice terlebih dahulu.', 'warning');
+                return;
+            }
+            this.previewLoading = true;
+            try {
+                const res = await fetch('logic.php?action=get_receipt_data&invoice=' + encodeURIComponent(invoice));
+                const result = await res.json();
+                if (result.status !== 'success') {
+                    Swal.fire('Tidak Ditemukan', result.message || 'Invoice tidak ditemukan.', 'warning');
+                    return;
+                }
+                this.previewTrx = RawBtPrinter.mapSaleToTrx(result.data);
+                this.previewSource = 'Invoice ' + invoice + ' (database)';
+            } catch(e) {
+                Swal.fire('Error', 'Gagal memuat data invoice.', 'error');
+            } finally {
+                this.previewLoading = false;
+            }
         },
 
         // Helper Format Ribuan

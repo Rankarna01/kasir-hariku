@@ -107,10 +107,15 @@ $is_admin_owner = in_array($user_role_printer, ['admin', 'owner', 'superadmin', 
                         class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2">
                     <i class="fa-solid fa-receipt"></i> 2. Pengaturan Format Struk (Database)
                 </button>
-                <button @click="activeTab = 'logs'" 
+                <button @click="activeTab = 'preview'"
+                        :class="activeTab === 'preview' ? 'bg-[#FF3870] text-white shadow-md shadow-pink-500/20' : 'bg-white text-slate-600 hover:bg-[#FFF0F5] hover:text-[#FF3870] border border-[#FFE4EC]'"
+                        class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-eye"></i> 3. Preview Struk
+                </button>
+                <button @click="activeTab = 'logs'"
                         :class="activeTab === 'logs' ? 'bg-[#FF3870] text-white shadow-md shadow-pink-500/20' : 'bg-white text-slate-600 hover:bg-[#FFF0F5] hover:text-[#FF3870] border border-[#FFE4EC]'"
                         class="px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2">
-                    <i class="fa-solid fa-clock-rotate-left"></i> 3. Log & Riwayat Cetak
+                    <i class="fa-solid fa-clock-rotate-left"></i> 4. Log & Riwayat Cetak
                 </button>
             </div>
 
@@ -303,6 +308,12 @@ $is_admin_owner = in_array($user_role_printer, ['admin', 'owner', 'superadmin', 
                     <div class="sm:col-span-2">
                         <label class="block text-[11px] font-black text-slate-600 uppercase tracking-wider mb-1.5">Teks Pesan Footer Struk</label>
                         <input type="text" x-model="storeSettings.receipt_footer" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-xs font-bold text-slate-800">
+                        <div class="flex flex-wrap items-center gap-2 mt-2">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mr-1">Saran:</span>
+                            <button type="button" @click="storeSettings.receipt_footer = 'Terima Kasih Atas Kunjungan Anda!'" class="px-2.5 py-1 rounded-lg bg-[#FFF0F5] hover:bg-[#FF3870] hover:text-white text-[#FF3870] border border-[#FFC5D8] text-[11px] font-bold transition-all">Terima Kasih Atas Kunjungan Anda!</button>
+                            <button type="button" @click="storeSettings.receipt_footer = 'Selamat Menikmati, Sampai Jumpa Lagi!'" class="px-2.5 py-1 rounded-lg bg-[#FFF0F5] hover:bg-[#FF3870] hover:text-white text-[#FF3870] border border-[#FFC5D8] text-[11px] font-bold transition-all">Selamat Menikmati, Sampai Jumpa Lagi!</button>
+                            <button type="button" @click="storeSettings.receipt_footer = 'Barang yang sudah dibeli tidak dapat ditukar'" class="px-2.5 py-1 rounded-lg bg-[#FFF0F5] hover:bg-[#FF3870] hover:text-white text-[#FF3870] border border-[#FFC5D8] text-[11px] font-bold transition-all">Barang yang sudah dibeli tidak dapat ditukar</button>
+                        </div>
                     </div>
                 </div>
 
@@ -340,7 +351,59 @@ $is_admin_owner = in_array($user_role_printer, ['admin', 'owner', 'superadmin', 
                 </div>
             </div>
 
-            <!-- ==================== TAB 3: LOG CETAK ADMIN ==================== -->
+            <!-- ==================== TAB 3: PREVIEW STRUK ==================== -->
+            <div x-show="activeTab === 'preview'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Kolom Kiri: Sumber Data Preview -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-white rounded-3xl border border-[#FFE4EC] p-6 shadow-xs space-y-5">
+                        <div class="border-b border-[#FFE4EC] pb-4">
+                            <h3 class="text-sm font-black text-[#4A2311] flex items-center gap-2">
+                                <i class="fa-solid fa-eye text-[#FF3870]"></i> Preview Struk Kasir
+                            </h3>
+                            <p class="text-[11px] text-slate-400 font-semibold">Tampilan ini mengikuti layout cetak RawBT. Perubahan di Tab 2 langsung terlihat di sini.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-600 uppercase tracking-wider mb-1.5">Sumber Data</label>
+                            <p class="text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5" x-text="previewSource"></p>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-black text-slate-600 uppercase tracking-wider mb-1.5">Cari Invoice (Database)</label>
+                            <div class="flex gap-2">
+                                <input type="text" x-model="previewInvoice" @keyup.enter="loadPreviewByInvoice()" placeholder="No. invoice..." class="flex-1 min-w-0 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-xs font-bold text-slate-800">
+                                <button type="button" @click="loadPreviewByInvoice()" :disabled="previewLoading" class="px-4 py-2.5 bg-[#FF3870] hover:bg-[#5C2D16] disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shrink-0">
+                                    <i class="fa-solid fa-magnifying-glass" :class="previewLoading ? 'fa-spin' : ''"></i> Muat
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" @click="loadPreviewLast()" class="py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-rotate-right"></i> Struk Terakhir
+                            </button>
+                            <button type="button" @click="loadPreviewSample()" class="py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-flask"></i> Data Contoh
+                            </button>
+                        </div>
+
+                        <div class="pt-4 border-t border-[#FFE4EC] space-y-2 text-[11px] font-semibold text-slate-500">
+                            <p>Ukuran kertas: <b class="text-slate-800" x-text="paperWidth"></b> (<span x-text="previewMaxCols"></span> karakter), diatur di Tab 1.</p>
+                            <p>Nama toko, alamat, telp, opsi elemen, dan footer diambil dari Tab 2.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kolom Kanan: Kertas Struk -->
+                <div class="lg:col-span-2 bg-slate-100 rounded-3xl border border-[#FFE4EC] p-6 flex flex-col items-center">
+                    <div class="bg-white shadow-lg rounded-md py-5 px-3 text-black overflow-hidden" :style="previewPaperStyle"><template x-for="(line, idx) in previewLines" :key="idx"><div :style="previewLineStyle(line)" x-text="line.divider ? '' : (line.text || ' ')"></div></template></div>
+                    <p class="mt-3 text-[10px] font-bold text-slate-400">✂ - - - - batas potong kertas - - - - ✂</p>
+                </div>
+
+            </div>
+
+            <!-- ==================== TAB 4: LOG CETAK ADMIN ==================== -->
             <div x-show="activeTab === 'logs'" class="space-y-5">
                 
                 <!-- Counter Statistik -->

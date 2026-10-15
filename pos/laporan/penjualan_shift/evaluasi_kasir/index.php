@@ -129,6 +129,7 @@ $page_title = "Evaluasi Kasir - Love Cakes POS";
             </div>
         </main>
     </div>
+    <script src="../../../assets/rawbt_printer.js?v=<?= time() ?>"></script>
     <script src="ajax.js?v=<?= time() ?>"></script>
 </body>
 </html>

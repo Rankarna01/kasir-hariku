@@ -167,6 +167,7 @@ $page_title = "Pelunasan DP (Piutang) - Love Cakes POS";
 
     </div>
 
+    <script src="../../assets/rawbt_printer.js?v=<?= time() ?>"></script>
     <script src="ajax.js?v=<?= time() ?>"></script>
 </body>
 </html>

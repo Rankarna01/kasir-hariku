@@ -96,6 +96,18 @@ if ($action === 'get_shifts') {
             $shift['system_balance'] = floatval($shift['start_cash']) + $cashBaru + $cashPelunasan - floatval($kasKeluar);
             $shift['difference'] = ($shift['status'] === 'closed') ? (floatval($shift['end_cash']) - $shift['system_balance']) : 0;
 
+            // Total pendapatan shift (sama dengan laporan tutup kasir): pembayaran - pembatalan, semua metode
+            $stmtPend = $pdo->prepare("
+                SELECT
+                    (SELECT COALESCE(SUM(sp.amount), 0) FROM sale_payments_pos sp
+                      WHERE sp.created_at BETWEEN ? AND ? AND sp.payment_type IN ('full', 'dp', 'pelunasan'))
+                  - (SELECT COALESCE(SUM(sc.amount), 0) FROM sale_cancellations_pos sc
+                      JOIN sales_pos s2 ON sc.sale_id = s2.id
+                      WHERE sc.created_at BETWEEN ? AND ?)
+            ");
+            $stmtPend->execute([$startTime, $endTime, $startTime, $endTime]);
+            $shift['total_pendapatan'] = floatval($stmtPend->fetchColumn());
+
             $sumSystemBalance += $shift['system_balance'];
             if ($shift['status'] === 'closed') {
                 $sumActualCash += floatval($shift['end_cash']);

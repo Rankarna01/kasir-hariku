@@ -14,7 +14,7 @@ if (empty($invoice)) {
 
 try {
     // 1. Tarik Data Master Transaksi
-    $stmtHead = $pdo->prepare("SELECT s.*, c.name as customer_name, c.phone as customer_phone FROM sales_pos s LEFT JOIN customers_pos c ON s.customer_id = c.id WHERE s.invoice_no = ?");
+    $stmtHead = $pdo->prepare("SELECT s.*, c.name as customer_name, c.phone as customer_phone, u.name as cashier_name FROM sales_pos s LEFT JOIN customers_pos c ON s.customer_id = c.id LEFT JOIN users_pos u ON s.user_id = u.id WHERE s.invoice_no = ?");
     $stmtHead->execute([$invoice]);
     $sale = $stmtHead->fetch(PDO::FETCH_ASSOC);
 
@@ -215,6 +215,7 @@ try {
                 <?php endif; ?>
             <?php else: ?>
                 <tr><td>Kasir</td><td>: <?= htmlspecialchars($sale['cashier_name'] ?? 'Kasir') ?></td></tr>
+                <tr><td>Metode</td><td>: <?= htmlspecialchars(strtoupper($sale['payment_method'] ?? '-')) ?></td></tr>
                 <tr><td>Plg</td><td>: <?= htmlspecialchars($sale['customer_name'] ?? 'Umum') ?></td></tr>
                 <?php if($is_po): ?>
                 <tr><td>Tipe</td><td>: <span style="background:#000; color:#fff; padding:1px 3px; border-radius:2px;">PESANAN PO</span></td></tr>

@@ -206,8 +206,7 @@ $today_ymd = date('Y-m-d');
                                     <th class="py-3.5 px-4 font-black">Waktu Buka</th>
                                     <th class="py-3.5 px-4 font-black">Waktu Tutup</th>
                                     <th class="py-3.5 px-4 font-black">Identitas Kasir</th>
-                                    <th class="py-3.5 px-4 font-black text-right">Saldo Sistem</th>
-                                    <th class="py-3.5 px-4 font-black text-right">Fisik (End Cash)</th>
+                                    <th class="py-3.5 px-4 font-black text-right">Total Pendapatan</th>
                                     <th class="py-3.5 px-4 font-black text-center">Status</th>
                                     <th class="py-3.5 px-4 font-black text-center w-24"><i class="fa-solid fa-ellipsis"></i></th>
                                 </tr>
@@ -268,34 +267,12 @@ $today_ymd = date('Y-m-d');
                                             </div>
                                         </td>
 
-                                        <!-- Saldo Sistem -->
+                                        <!-- Total Pendapatan -->
                                         <td class="py-3 px-4 text-right">
                                             <div class="font-black text-slate-800 text-sm">
-                                                Rp <span x-text="formatRupiah(shift.system_balance)"></span>
+                                                Rp <span x-text="formatRupiah(shift.total_pendapatan)"></span>
                                             </div>
-                                            <div class="text-[10px] text-slate-400 font-medium">Modal + Net Kas</div>
-                                        </td>
-
-                                        <!-- Fisik (End Cash) & Selisih -->
-                                        <td class="py-3 px-4 text-right">
-                                            <template x-if="shift.status === 'open'">
-                                                <span class="text-slate-400 font-bold">-</span>
-                                            </template>
-                                            <template x-if="shift.status === 'closed'">
-                                                <div>
-                                                    <div class="font-black text-slate-800 text-sm">
-                                                        Rp <span x-text="formatRupiah(shift.end_cash)"></span>
-                                                    </div>
-                                                    <div class="mt-0.5">
-                                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded"
-                                                              :class="shift.difference < 0 ? 'bg-rose-50 text-rose-600 border border-rose-200' : (shift.difference > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600')">
-                                                            <i class="fa-solid text-[9px]" :class="shift.difference < 0 ? 'fa-arrow-down' : (shift.difference > 0 ? 'fa-arrow-up' : 'fa-check')"></i>
-                                                            <span x-text="shift.difference < 0 ? 'Minus ' : (shift.difference > 0 ? 'Lebih ' : 'Pas ')"></span>
-                                                            <span x-text="'Rp ' + formatRupiah(Math.abs(shift.difference))"></span>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </template>
+                                            <div class="text-[10px] text-slate-400 font-medium" x-text="shift.status === 'open' ? 'Shift masih berjalan' : 'Tunai + non-tunai'"></div>
                                         </td>
 
                                         <!-- Status -->
@@ -321,10 +298,15 @@ $today_ymd = date('Y-m-d');
                                                     title="Lihat Rincian Sesi">
                                                     <i class="fa-solid fa-eye text-xs"></i>
                                                 </button>
-                                                <button x-show="shift.status === 'closed'" @click="printShift(shift.id)" 
-                                                    class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-primary text-primary hover:text-white transition-all flex items-center justify-center border border-primary/20 cursor-pointer" 
-                                                    title="Cetak Ulang Struk Tutup Shift">
+                                                <button x-show="shift.status === 'closed'" @click="printShift(shift.id)"
+                                                    class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-primary text-primary hover:text-white transition-all flex items-center justify-center border border-primary/20 cursor-pointer"
+                                                    title="Cetak Langsung via RawBT">
                                                     <i class="fa-solid fa-print text-xs"></i>
+                                                </button>
+                                                <button x-show="shift.status === 'closed'" @click="printShiftManual(shift.id)"
+                                                    class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-800 text-slate-600 hover:text-white transition-all flex items-center justify-center border border-slate-200 cursor-pointer"
+                                                    title="Cetak Manual (pilih cara cetak sendiri)">
+                                                    <i class="fa-solid fa-file-lines text-xs"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -376,8 +358,11 @@ $today_ymd = date('Y-m-d');
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
+                        <button x-show="activeShift?.status === 'closed'" @click="printShiftManual(activeShift.id)" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-file-lines"></i> Cetak Manual
+                        </button>
                         <button x-show="activeShift?.status === 'closed'" @click="printShift(activeShift.id)" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-primary text-primary hover:text-white border border-primary/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
-                            <i class="fa-solid fa-print"></i> Cetak Struk
+                            <i class="fa-solid fa-print"></i> Cetak Struk (RawBT)
                         </button>
                         <button @click="showModal = false" class="w-8 h-8 rounded-full bg-slate-200 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center cursor-pointer text-slate-600">
                             <i class="fa-solid fa-xmark text-sm"></i>
@@ -501,6 +486,7 @@ $today_ymd = date('Y-m-d');
         </div>
 
     </div>
+    <script src="../../assets/rawbt_printer.js?v=<?= time() ?>"></script>
     <script src="ajax.js?v=<?= time() ?>"></script>
 </body>
 </html>

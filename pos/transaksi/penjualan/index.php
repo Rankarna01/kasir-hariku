@@ -308,6 +308,9 @@ $page_title = "Riwayat Penjualan - Love Cakes POS";
                     <button @click="openVoidModal()" class="w-full sm:w-auto bg-rose-50 hover:bg-rose-100 text-rose-600 font-black px-6 py-3 rounded-xl transition-all border border-rose-200 flex justify-center items-center gap-2" x-show="activeSale && activeSale.cancellation_status !== 'full'">
                         <i class="fa-solid fa-ban"></i> Batalkan Transaksi
                     </button>
+                    <button @click="printReceiptManual(activeSale?.invoice_no)" class="w-full sm:w-auto bg-white hover:bg-slate-100 text-slate-800 font-black px-6 py-3 rounded-xl transition-all border border-slate-300 flex justify-center items-center gap-2" title="Buka halaman struk, lalu pilih cara cetak sendiri">
+                        <i class="fa-solid fa-file-lines"></i> Cetak Manual
+                    </button>
                     <button @click="printReceipt(activeSale?.invoice_no)" class="w-full sm:flex-1 bg-slate-800 hover:bg-slate-900 text-white font-black px-6 py-3 rounded-xl transition-all shadow-md flex justify-center items-center gap-2">
                         <i class="fa-solid fa-print"></i> Cetak Ulang Struk
                     </button>
@@ -381,6 +384,7 @@ $page_title = "Riwayat Penjualan - Love Cakes POS";
 
     </div>
 
+    <script src="../../assets/rawbt_printer.js?v=<?= time() ?>"></script>
     <script src="ajax.js?v=<?= time() ?>"></script>
 </body>
 </html>

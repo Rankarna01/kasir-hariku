@@ -294,7 +294,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         printReceipt(invoiceNo) {
-            window.open(`../../kasir/print_receipt.php?invoice=${invoiceNo}&auto_print_usb=1`, '_blank', 'width=400,height=600');
+            RawBtPrinter.reprintInvoice(invoiceNo);
         },
 
         formatDate(dateString) {

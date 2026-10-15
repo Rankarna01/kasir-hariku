@@ -171,6 +171,11 @@ document.addEventListener('alpine:init', () => {
         },
 
         printShift(shiftId) {
+            RawBtPrinter.reprintShift(shiftId);
+        },
+
+        // Cetak manual: buka halaman laporan, pilih cara cetak sendiri
+        printShiftManual(shiftId) {
             const w = 450, h = 680;
             const left = (window.screen.width - w) / 2;
             const top = (window.screen.height - h) / 2;
