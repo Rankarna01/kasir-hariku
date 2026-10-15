@@ -12,11 +12,15 @@ if (!in_array($user_role, ['admin', 'owner', 'superadmin', 'backoffice'])) {
     exit;
 }
 
-// Auto migration: Tambah kolom phone ke users_pos jika belum ada
+// Auto migration: Tambah kolom phone & is_hidden ke users_pos jika belum ada
 try {
     $colPhone = $pdo->query("SHOW COLUMNS FROM users_pos LIKE 'phone'")->fetch();
     if (!$colPhone) {
         $pdo->exec("ALTER TABLE users_pos ADD COLUMN phone VARCHAR(20) NULL AFTER warehouse_id");
+    }
+    $colHidden = $pdo->query("SHOW COLUMNS FROM users_pos LIKE 'is_hidden'")->fetch();
+    if (!$colHidden) {
+        $pdo->exec("ALTER TABLE users_pos ADD COLUMN is_hidden TINYINT(1) DEFAULT 0 AFTER role_id");
     }
 } catch (Exception $e) {}
 
@@ -49,6 +53,7 @@ try {
                 FROM users_pos u
                 LEFT JOIN roles_pos r ON u.role_id = r.id
                 LEFT JOIN warehouses w ON u.warehouse_id = w.id
+                WHERE COALESCE(u.is_hidden, 0) = 0
                 ORDER BY u.role_id ASC, u.name ASC
             ";
             $stmt = $pdo->prepare($sql);

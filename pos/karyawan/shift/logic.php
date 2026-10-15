@@ -35,13 +35,14 @@ $admin_user_id = $_SESSION['pos_user_id'] ?? 1;
 if ($action === 'get_master_data') {
     header('Content-Type: application/json; charset=utf-8');
     try {
-        // Active employees / users
+        // Active employees / users (exclude hidden accounts)
         $stmtUsers = $pdo->query("
             SELECT u.id, u.name, u.username, r.role_name, u.warehouse_id,
                    COALESCE(w.name, 'Store 01') as store_name
             FROM users_pos u 
             JOIN roles_pos r ON u.role_id = r.id 
             LEFT JOIN warehouses w ON u.warehouse_id = w.id
+            WHERE COALESCE(u.is_hidden, 0) = 0
             ORDER BY r.role_name ASC, u.name ASC
         ");
         $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);

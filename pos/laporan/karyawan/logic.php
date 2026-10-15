@@ -75,6 +75,7 @@ if ($action === 'get_report' || $action === 'export_excel') {
             WHERE u.role_id != 1 
               AND LOWER(COALESCE(r.role_name, '')) NOT LIKE '%admin%' 
               AND LOWER(COALESCE(r.role_name, '')) NOT LIKE '%owner%'
+              AND COALESCE(u.is_hidden, 0) = 0
             ORDER BY u.name ASC
         ");
         $allUsers = $stmtAllUsers->fetchAll(PDO::FETCH_ASSOC);
